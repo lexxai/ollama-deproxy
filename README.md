@@ -190,7 +190,10 @@ When the remote server returns an error (HTTP 400+), the proxy interrupts the st
 If you query a model that doesn't exist on the remote host:
 
 ```text
-ERROR:ollama_deproxy.handlers:Remote Error [400] on [https://openwebui.example.com/ollama/api/show](https://openwebui.example.com/ollama/api/show)
+ERROR:ollama_deproxy.handlers:Remote Error [400] on https://openwebui.example.com/ollama/api/show {"name":"qwen2.5-coder:1.5b-base1"} {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
+```
+Where is:
+```text
 Sent Body: {"name":"qwen2.5-coder:1.5b-base1"}
 Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 ```
