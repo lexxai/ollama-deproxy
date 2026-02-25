@@ -1,0 +1,23 @@
+# docker compose --progress=plain build
+# docker compose up --build -d && docker compose logs -f
+
+services:
+  ollama-deproxy:
+    build:
+      context: .
+      args:
+        PYTHON_VERSION: "3.14"
+    image: ollama-deproxy:latest
+    ports:
+      - "11434:11434"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
