@@ -52,8 +52,8 @@ Run the following command in your terminal to start the service:
 docker compose up -d
 ```
 This will launch the container with the specified configuration.
-
-Expected log output:
+#### Verifying the Connection
+You can monitor the initialization and incoming traffic by checking the service logs:
 ```bash
 docker compose logs -f 
 ollama-deproxy-1  | INFO:     Started server process [1]
@@ -62,7 +62,12 @@ ollama-deproxy-1  | INFO:     Application startup complete.
 ollama-deproxy-1  | INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
 ollama-deproxy-1  | INFO:     172.21.0.1:60700 - "POST /api/generate HTTP/1.1" 200 OK
 ```
-At local TCP port `:11434` can connect your application that communicate with remote ollama w/o any auth
+#### Zero-Auth Local Access
+Once the container is active, your local applications can communicate with the remote Ollama instance via:
+
+Local Address: http://localhost:11434
+
+Security: The proxy handles all necessary authentication headers upstream, allowing your local tools to connect seamlessly without managing API keys or complex auth logic.
 
 ## Installation
 
@@ -73,7 +78,7 @@ git clone https://github.com/lexxai/ollama-deproxy.git
 cd ollama-deproxy
 ```
 
-### ## Option 1 - Using `uv` *(recommended)*
+### Option 1 - Using `uv` *(recommended)*
 
 [`uv`](https://github.com/astral-sh/uv) is a blazing-fast Python package installer and resolver, written in Rust.
 
