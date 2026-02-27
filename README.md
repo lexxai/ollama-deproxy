@@ -206,6 +206,7 @@ Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 [2]: https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
 * https://github.com/ollama/ollama
 * https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
+* https://lexxai.blogspot.com/2026/02/ollama-deproxy-ollama.html
 
 ## 📄 License
 
