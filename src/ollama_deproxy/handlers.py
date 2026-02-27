@@ -1,41 +1,66 @@
 import logging
+from http.client import HTTPException, HTTPResponse
 
 from starlette.background import BackgroundTask
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse
 
 from .config import settings
-from .utils import filter_headers
+from .ollama_helper import OllamaHelper
+from .utils import filter_headers, debug_requests_data
 
 logger = logging.getLogger(__name__)
 
 
-async def handler_root_response(path: str, request: Request, session):
+def build_proxy_headers(request: Request):
+    proxy_headers = dict(request.headers)
+    proxy_headers.pop("host", None)
+    proxy_headers.pop("authorization", None)
+    return proxy_headers
+
+
+async def handler_root_response(path: str, request: Request, session, ollama_helper: OllamaHelper):
     # logger.debug(f"Handling root request for path: {path}")
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
 
-    proxy_headers = dict(request.headers)
-    proxy_headers.pop("host", None)
+    method = request.method
+    query_params = request.query_params
 
-    body = await request.body()
+    proxy_headers = build_proxy_headers(request)
 
-    async with session.stream(
-        method=request.method,
-        url=target_url,
-        headers=proxy_headers,
-        content=body,
-        params=request.query_params,
-        follow_redirects=False,
-    ) as response:
-        if settings.decode_response:
-            await response.aread()
-            response_content = response.content
-        else:
-            response_content = b"".join([chunk async for chunk in response.aiter_raw()])
+    body_bytes = await request.body() if request else b""
+
+    debug_requests_data(body_bytes, method, target_url)
+
+    if settings.correct_numbered_model_names:
+        body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
+        proxy_headers["content-length"] = str(len(body_bytes))
+
+    try:
+        async with session.stream(
+            method=method,
+            url=target_url,
+            headers=proxy_headers,
+            content=body_bytes,
+            params=query_params,
+            follow_redirects=False,
+        ) as response:
+            if settings.decode_response:
+                await response.aread()
+                response_content = response.content
+                # logger.debug(f"Response session.headers: {session.headers}")
+            else:
+                response_content = b"".join([chunk async for chunk in response.aiter_raw()])
+    except Exception as e:
+        logger.error(f"handler_root_response: {e}")
+        return Response(
+            content="Error remote side",
+            status_code=500,
+        )
 
     if response.status_code >= 400:
         logger.error(
-            f"Error [{response.status_code}] on '{target_url}' with data: {body.decode()} : {response_content.decode()}"
+            f"Error [{response.status_code}] on '{target_url}' with data: {body_bytes.decode()} : {response_content.decode()}"
         )
 
     return Response(
@@ -45,30 +70,44 @@ async def handler_root_response(path: str, request: Request, session):
     )
 
 
-async def handler_root_stream_response(path: str, request: Request, session):
+async def handler_root_stream_response(path: str, request: Request, session, ollama_helper: OllamaHelper):
     # logger.debug(f"Handling root stream request for path: {path}")
 
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
 
-    headers = dict(request.headers)
-    headers.pop("host", None)
+    method = request.method
+    query_params = request.query_params
+
+    proxy_headers = build_proxy_headers(request)
 
     # async def request_body():
     #     async for chunk in request.stream():
     #         yield chunk
 
-    body_bytes = await request.body()
+    body_bytes = await request.body() if request else b""
 
-    stream_ctx = session.stream(
-        method=request.method,
-        url=target_url,
-        headers=headers,
-        content=body_bytes,
-        params=request.query_params,
-        follow_redirects=False,
-    )
+    debug_requests_data(body_bytes, method, target_url)
 
-    response = await stream_ctx.__aenter__()
+    if settings.correct_numbered_model_names:
+        body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
+        proxy_headers["content-length"] = str(len(body_bytes))
+
+    try:
+        stream_ctx = session.stream(
+            method=method,
+            url=target_url,
+            headers=proxy_headers,
+            content=body_bytes,
+            params=query_params,
+            follow_redirects=False,
+        )
+        response = await stream_ctx.__aenter__()
+    except Exception as e:
+        logger.error(f"handler_root_response: {e}")
+        return Response(
+            content="Error remote side",
+            status_code=500,
+        )
 
     if response.status_code >= 400:  # Usually 400+ are the actual errors
         # 1. Fully consume the error body so we can see what happened

@@ -8,9 +8,12 @@ def build_session():
     if settings.remote_auth_token:
         headers[settings.remote_auth_header] = settings.remote_auth_token.get_secret_value()
 
+    headers["user-agent"] = f"Ollama-DeProxy/{settings.app_version};httpx/{httpx.__version__}"
+
+
     limits = httpx.Limits(
         max_keepalive_connections=50,
-        max_connections=100,
+        max_connections=1000,
     )
     timeout = httpx.Timeout(settings.remote_timeout) if settings.remote_timeout is not None else None
 
