@@ -169,6 +169,63 @@ DECODE_RESPONSE=True
 
 > Enable only if you explicitly need response decompression before forwarding.
 
+Enable debugging for incoming requests (default: False)
+```bash
+#DEBUG_REQUEST=False
+```
+
+If models are numbered, try to replace them to string representation of an Ollama list.
+This is useful for Copilot Plugin from GitHub that uses numbered model names instead of string.
+Default: False
+```bash
+CORRECT_NUMBERED_MODEL_NAMES=False
+```
+
+When enabled,
+```bash
+CORRECT_NUMBERED_MODEL_NAMES=True
+```
+In logs can see:
+```text
+DEBUG:ollama_deproxy.ollama_helper:0:qwen2.5-coder:1.5b-base
+DEBUG:ollama_deproxy.ollama_helper:1:qwen3:30b
+DEBUG:ollama_deproxy.ollama_helper:2:qwen3:14b
+DEBUG:ollama_deproxy.ollama_helper:3:qwen3:8b
+DEBUG:ollama_deproxy.ollama_helper:4:qwen3-coder-next:latest
+DEBUG:ollama_deproxy.ollama_helper:5:qwen2.5:0.5b
+DEBUG:ollama_deproxy.ollama_helper:6:johanteekens/Llama-4-Scout-17B-16E-Instruct:latest
+DEBUG:ollama_deproxy.ollama_helper:7:qwen3-embedding:latest
+DEBUG:ollama_deproxy.ollama_helper:8:qwen3-embedding:4b
+DEBUG:ollama_deproxy.ollama_helper:9:qwen3-embedding:0.6b
+DEBUG:ollama_deproxy.ollama_helper:10:phi4:14b
+DEBUG:ollama_deproxy.ollama_helper:11:phi3:3.8b
+DEBUG:ollama_deproxy.ollama_helper:12:phi3:14b
+DEBUG:ollama_deproxy.ollama_helper:13:paraphrase-multilingual:latest
+DEBUG:ollama_deproxy.ollama_helper:14:nomic-embed-text:latest
+DEBUG:ollama_deproxy.ollama_helper:15:mxbai-embed-large:latest
+DEBUG:ollama_deproxy.ollama_helper:16:mistral:latest
+DEBUG:ollama_deproxy.ollama_helper:17:llava:7b
+DEBUG:ollama_deproxy.ollama_helper:18:llama3.2:3b
+DEBUG:ollama_deproxy.ollama_helper:19:llama3.1:8b
+DEBUG:ollama_deproxy.ollama_helper:20:granite-embedding:30m
+DEBUG:ollama_deproxy.ollama_helper:21:granite-embedding:278m
+DEBUG:ollama_deproxy.ollama_helper:22:gpt-oss:20b
+DEBUG:ollama_deproxy.ollama_helper:23:gemma3:27b
+DEBUG:ollama_deproxy.ollama_helper:24:gemma3:12b-it-qat
+DEBUG:ollama_deproxy.ollama_helper:25:gemma3:12b
+DEBUG:ollama_deproxy.ollama_helper:26:embeddinggemma:latest
+DEBUG:ollama_deproxy.ollama_helper:27:dengcao/Qwen3-Reranker-0.6B:Q8_0
+DEBUG:ollama_deproxy.ollama_helper:28:deepseek-r1:8b
+DEBUG:ollama_deproxy.ollama_helper:29:codellama:34b-instruct
+DEBUG:ollama_deproxy.ollama_helper:30:chroma/all-minilm-l6-v2-f32:latest
+````
+```text
+DEBUG:ollama_deproxy.ollama_helper:replacement model_name: qwen3-coder-next:latest for 4
+```
+
+
+
+
 ---
 
 ## Minimal Required Configuration
