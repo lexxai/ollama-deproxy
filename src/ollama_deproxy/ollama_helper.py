@@ -27,33 +27,46 @@ class OllamaHelper:
     def set_session(self, session):
         self.session = session
 
-    async def get_request(self, path, method, body_bytes: bytes = None, query_params=None) -> bytes:
+    async def get_request(self, path, method: str = "GET", body_bytes: bytes = None, query_params=None) -> bytes:
+        """
+        Asynchronous function to execute an HTTP request to the provided path using the specified method.
+
+        This function interacts with a remote server and returns the HTTP response content for the
+        requested resource. It uses an HTTP session to facilitate communication. If the session is
+        not initialized, it will log an error and return an empty byte string. Any HTTP status codes
+        in the 400-599 range will also log an error with the appropriate details.
+
+        Parameters:
+        path: str
+            The endpoint path relative to the remote server's base URL.
+        method: str, optional
+            The HTTP method to be used for the request (default is "GET").
+        body_bytes: bytes, optional
+            The request payload in bytes. Defaults to None.
+        query_params: dict or None, optional
+            Optional dictionary containing query parameters for the request.
+
+        Returns:
+        bytes
+            The response content from the HTTP request.
+        """
         if self.session is None:
             logger.error("Session not initialized")
             return b""
-
         target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
         proxy_headers = {}
-        async with self.session.stream(
+        response = await self.session.request(
             method=method,
             url=target_url,
             headers=proxy_headers,
-            content=body_bytes,
             params=query_params,
             follow_redirects=False,
-        ) as response:
-            if settings.decode_response:
-                await response.aread()
-                response_content = response.content
-                # logger.debug(f"Response session.headers: {session.headers}")
-            else:
-                response_content = b"".join([chunk async for chunk in response.aiter_raw()])
-
+        )
         if response.status_code >= 400:
             logger.error(
-                f"Error [{response.status_code}] on '{target_url}' with data: {body_bytes.decode()} : {response_content.decode()}"
+                f"Error [{response.status_code}] on '{target_url}' with data: {body_bytes.decode()} : {response.text}"
             )
-        return response_content
+        return response.content
 
     async def get_models(self, request: Request = None):
         """
@@ -74,7 +87,7 @@ class OllamaHelper:
             if body_bytes:
                 try:
                     data = json.loads(body_bytes.decode())
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, UnicodeDecodeError):
                     data = {}
             else:
                 data = {}
@@ -201,8 +214,8 @@ if __name__ == "__main__":
         ollama_helper.set_session(session)
         # await ollama_helper.get_models()
         model_name = await ollama_helper.get_model_name(12)
-        logger.debug("Model name: %s", model_name)
+        logger.info("Model name: %s", model_name)
         model_id = await ollama_helper.get_model_id("llama3.1:8b")
-        logger.debug("Model id: %s", model_id)
+        logger.info("Model id: %s", model_id)
 
     asyncio.run(test())
