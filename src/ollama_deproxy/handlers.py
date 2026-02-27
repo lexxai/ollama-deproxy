@@ -1,5 +1,4 @@
 import logging
-from http.client import HTTPException, HTTPResponse
 
 from starlette.background import BackgroundTask
 from starlette.requests import Request
