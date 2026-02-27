@@ -22,6 +22,8 @@ class Settings(BaseModel):
     app_version: str | None = Field(default=None)
     stream_response: bool = Field(default=environ.get("STREAM_RESPONSE", True))
     decode_response: bool = Field(default=environ.get("DECODE_RESPONSE", False))
+    debug_request: bool = Field(default=environ.get("DEBUG_REQUEST", False))
+    correct_numbered_model_names: bool = Field(default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False))
 
     @field_validator("app_version", mode="before")
     @classmethod
