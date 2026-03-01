@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, HttpUrl, Field, field_validator, SecretStr, ConfigDict
 
 BASE_PATH = Path(__file__).parent.parent
-
 load_dotenv(BASE_PATH.parent / ".env")
 
 
@@ -25,6 +24,18 @@ class Settings(BaseModel):
     debug_request: bool = Field(default=environ.get("DEBUG_REQUEST", False))
     correct_numbered_model_names: bool = Field(default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False))
 
+    cache_enabled: bool = Field(default=environ.get("CACHE_ENABLED", True))
+    cache_maxsize: int = Field(default=environ.get("CACHE_MAXSIZE", 512))  # 512 entries
+    cache_ttl: int = Field(default=environ.get("CACHE_TTL", 60 * 60 * 12))  # 12 hours
+    hash_algorithm: str = Field(default=environ.get("HASH_ALGORITHM", "auto"))
+
+    @field_validator("hash_algorithm", mode="before")
+    @classmethod
+    def normalize_hash_algorithm(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
     @field_validator("app_version", mode="before")
     @classmethod
     def fill_version(cls, v):
@@ -43,6 +54,9 @@ class Settings(BaseModel):
 
 
 settings = Settings()
+
+print(f"Ollama DeProxy v{settings.app_version}")
+
 
 # from pprint import pprint
 

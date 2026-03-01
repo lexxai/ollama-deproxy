@@ -11,7 +11,7 @@ Create a `.env` file based on `.env.example` and adjust the values as needed.
 Remote Ollama API endpoint.
 
 Example:
-```bash
+```dotenv
 REMOTE_URL=https://openwebui.example.com/ollama
 ````
 
@@ -25,7 +25,7 @@ Authentication token used for the remote API.
 
 Typically in Bearer format:
 
-```bash
+```dotenv
 REMOTE_AUTH_TOKEN=Bearer YOUR_TOKEN_HERE
 ```
 
@@ -55,7 +55,7 @@ Available values:
 
 Example:
 
-```bash
+```dotenv
 LOG_LEVEL=DEBUG
 ```
 
@@ -73,7 +73,7 @@ True
 
 Disable if the upstream proxy does not properly support HTTP/2:
 
-```bash
+```dotenv
 REMOTE_URL_HTTP2=False
 ```
 
@@ -91,7 +91,7 @@ Authorization
 
 Example:
 
-```bash
+```dotenv
 REMOTE_AUTH_HEADER=X-API-Key
 ```
 
@@ -109,7 +109,7 @@ Default:
 
 Example:
 
-```bash
+```dotenv
 LOCAL_PORT=8080
 ```
 
@@ -124,7 +124,7 @@ Timeout (in seconds) for upstream requests.
 
 Example:
 
-```bash
+```dotenv
 REMOTE_TIMEOUT=60
 ```
 
@@ -145,7 +145,7 @@ True
 
 Example:
 
-```bash
+```dotenv
 STREAM_RESPONSE=False
 ```
 
@@ -163,29 +163,33 @@ False
 
 Enable if your upstream proxy applies compression that must be removed:
 
-```bash
+```dotenv
 DECODE_RESPONSE=True
 ```
 
 > Enable only if you explicitly need response decompression before forwarding.
 
+### `DEBUG_REQUEST`
+
 Enable debugging for incoming requests (default: False)
-```bash
-#DEBUG_REQUEST=False
+```dotenv
+DEBUG_REQUEST=False
 ```
+
+### `CORRECT_NUMBERED_MODEL_NAMES`
 
 If models are numbered, try to replace them to string representation of an Ollama list.
 This is useful for Copilot Plugin from GitHub that uses numbered model names instead of string.
 Default: False
-```bash
+```dotenv
 CORRECT_NUMBERED_MODEL_NAMES=False
 ```
 
 When enabled,
-```bash
+```dotenv
 CORRECT_NUMBERED_MODEL_NAMES=True
 ```
-In logs can see:
+In the logs can see:
 ```text
 DEBUG:ollama_deproxy.ollama_helper:0:qwen2.5-coder:1.5b-base
 DEBUG:ollama_deproxy.ollama_helper:1:qwen3:30b
@@ -223,7 +227,44 @@ DEBUG:ollama_deproxy.ollama_helper:30:chroma/all-minilm-l6-v2-f32:latest
 DEBUG:ollama_deproxy.ollama_helper:replacement model_name: qwen3-coder-next:latest for 4
 ```
 
+### `CACHE_ENABLED`
 
+Cache for selected model endpoints is enabled by default.
+```dotenv
+CACHE_ENABLED=true
+```
+
+### `CACHE_MAXSIZE`
+
+Maximum number of cached entries (default: 512).
+```dotenv
+CACHE_MAXSIZE=512
+```
+
+### `CACHE_TTL`
+
+Cache TTL in seconds (default: 12 hours).
+```dotenv
+CACHE_TTL=43200
+```
+
+
+### `HASH_ALGORITHM`
+
+Hash algorithm used for cache keys.
+ - auto: benchmark available algorithms on startup and pick the fastest for this platform
+ - or set explicitly to one of: blake2s, blake2b, sha256
+
+
+    Tip: after the first run, you can set the selected value here to skip auto-detection.
+
+```dotenv
+HASH_ALGORITHM=auto
+```
+or after detection:
+```dotenv
+HASH_ALGORITHM=blake2b
+```
 
 
 ---

@@ -22,11 +22,16 @@ if settings.decode_response:
 logger = logging.getLogger(__name__)
 
 
-def filter_headers(headers):
-    return {k: v for k, v in headers.items() if k.lower() not in excluded_headers}
+def filter_headers(headers, decode_response: bool = None):
+    if decode_response is not None and settings.decode_response != decode_response and decode_response == True:
+        excluded_headers_set = excluded_headers.copy()
+        excluded_headers_set.add("content-encoding")
+        return {k: v for k, v in headers.items() if k.lower() not in excluded_headers_set}
+    else:
+        return {k: v for k, v in headers.items() if k.lower() not in excluded_headers}
 
 
-def debug_requests_data(body_bytes: bytes, method:str="", target_url:str=""):
+def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
     if settings.debug_request:
         if body_bytes:
             try:

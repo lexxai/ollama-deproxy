@@ -7,28 +7,30 @@ It simplifies access to remote **Ollama** instances that are wrapped behind anot
 
 If you're a developer working locally and need to access a remote **Ollama** instance that sits behind an application proxy such as [**OpenWebUI**][2], you may encounter:
 
-* Additional authorization requirements
-* Wrapped or modified HTTP headers
-* Response compression or transformation
-* Reverse proxy constraints
+- Additional authorization requirements
+- Wrapped or modified HTTP headers
+- Response compression or transformation
+- Reverse proxy constraints
 
 `Ollama DeProxy` provides a clean and simple way to:
 
-* Bypass extra authorization layers
-* Forward requests transparently
-* Control streaming and decoding behavior
-* Restore direct API-like access to the upstream Ollama service
+- Bypass extra authorization layers
+- Forward requests transparently
+- Control streaming and decoding behavior
+- Restore direct API-like access to the upstream Ollama service
 
 It acts as a thin, configurable HTTP bridge between your local tools and the remote Ollama instance.
 
 ## Features
 
-* **Auth Injection**: Automatically inject custom headers (JWT, API Keys) to bypass upstream proxy layers.
-* **Transparent Forwarding**: Supports all HTTP methods (`GET`, `POST`, `PUT`, `DELETE`, etc.).
-* **Smart Streaming**: Toggle `STREAM_RESPONSE` to match your client application's requirements.
-* **Efficient Decoding**: Use `DECODE_RESPONSE` to choose between automatic decompression (Brotli/Gzip) or raw binary passthrough for lower CPU overhead.
-* **HTTP/2 Support**: Full support for modern upstream connections.
----
+- **Transparent Request Forwarding**: Acts as a local HTTP server (default port `11434`) that forwards all requests to a remote Ollama-compatible API
+- **Authentication Handling**: Automatically injects custom authentication headers (JWT, API Keys) to bypass upstream proxy layers
+- **Response Processing**: Supports streaming, decompression (Brotli/Gzip), and header filtering
+- **Model Name Correction**: Replaces numeric model identifiers with actual model names
+- **Response Caching**: Caches responses for specific endpoints with TTL-based eviction
+- **HTTP/2 Support**: Full support for modern upstream connections.
+- **Efficient Decoding**: Use `DECODE_RESPONSE` to choose between automatic decompression (Brotli/Gzip) or raw binary passthrough.
+
 
 ## Quick Start
 
@@ -47,22 +49,30 @@ cp .env.example .env
 ```
 
 ### Using Docker Compose
+
 Run the following command in your terminal to start the service:
+
 ```bash
 docker compose up -d
 ```
+
 This will launch the container with the specified configuration.
+
 #### Verifying the Connection
+
 You can monitor the initialization and incoming traffic by checking the service logs:
+
 ```bash
-docker compose logs -f 
+docker compose logs -f
 ollama-deproxy-1  | INFO:     Started server process [1]
 ollama-deproxy-1  | INFO:     Waiting for application startup.
 ollama-deproxy-1  | INFO:     Application startup complete.
 ollama-deproxy-1  | INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
 ollama-deproxy-1  | INFO:     172.21.0.1:60700 - "POST /api/generate HTTP/1.1" 200 OK
 ```
+
 #### Zero-Auth Local Access
+
 Once the container is active, your local applications can communicate with the remote Ollama instance via:
 
 Local Address: http://localhost:11434
@@ -78,11 +88,11 @@ git clone https://github.com/lexxai/ollama-deproxy.git
 cd ollama-deproxy
 ```
 
-### Option 1 - Using `uv` *(recommended)*
+### Option 1 - Using `uv` _(recommended)_
 
 [`uv`](https://github.com/astral-sh/uv) is a blazing-fast Python package installer and resolver, written in Rust.
 
-1. **Install `uv`** *(if not already installed)*:
+1. **Install `uv`** _(if not already installed)_:
 
 ```bash
 pip install uv
@@ -112,15 +122,18 @@ uv run -m src.ollama_deproxy.main
 
 ---
 
-### Option 2 - Using `pip` *(fallback)*
+### Option 2 - Using `pip` _(fallback)_
 
 If you prefer `pip`, or `uv` is unavailable:
 
 #### Windows
+
 ```bash
 python -m venv .venv && .venv\Scripts\activate
 ```
+
 #### macOS / Linux
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 ```
@@ -145,13 +158,14 @@ python -m src.ollama_deproxy.main
 ```
 
 If installed as a wheel:
+
 ```bash
 ollama-deproxy
 ```
 
 ---
 
-##  Build as a Package
+## Build as a Package
 
 Build and install as a distributable package:
 
@@ -169,6 +183,7 @@ uv run ollama-deproxy
 # → INFO:     Started server process [21540]
 # → INFO:     Uvicorn running on http://0.0.0.0:11434
 ```
+
 Expected output:
 
 ```
@@ -181,6 +196,37 @@ INFO:     127.0.0.1:56456 - "GET /api/tags HTTP/1.1" 200 OK
 
 ## [Environment Configuration](DOCS/ENVIRONMENT.md)
 
+## Response Caching
+
+The proxy includes a built-in caching system to improve performance for frequently accessed endpoints controlled by environment variables:
+* **CACHE_ENABLED**
+* **CACHE_MAXSIZE**
+* **CACHE_TTL**
+* **HASH_ALGORITHM**
+  Includes automatic hash algorithm detection to identify the optimal cache key generation method for your platform and
+  architecture.
+    ```bash
+    uv run ollama-deproxy
+    Ollama DeProxy v0.3.0
+    INFO:     Started server process [29256]
+    INFO:     Waiting for application startup.
+    INFO:ollama_deproxy.best_hash:Cache key hash algorithm auto-selection...
+    INFO:ollama_deproxy.cache_base:Cache key hash algorithm auto-selection complete. Can store it on .env file 'HASH_ALGORITHM=blake2b' for skip autodetection next time.
+    INFO:     Application startup complete.
+    INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
+    ```
+
+**Cached Endpoints:**
+
+- `/api/tags` - Model list
+- `/api/models` - Model information
+- `/api/show` - Model details
+
+**Benefits:**
+
+- Reduces latency for repeated requests
+- Decreases load on remote Ollama instances
+- Improves response times for model metadata queries
 
 ## Error Logging & Diagnostics
 
@@ -192,7 +238,9 @@ If you query a model that doesn't exist on the remote host:
 ```text
 ERROR:ollama_deproxy.handlers:Remote Error [400] on https://openwebui.example.com/ollama/api/show {"name":"qwen2.5-coder:1.5b-base1"} {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 ```
+
 Where is:
+
 ```text
 Sent Body: {"name":"qwen2.5-coder:1.5b-base1"}
 Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
@@ -204,11 +252,11 @@ Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 
 [1]: https://github.com/ollama/ollama
 [2]: https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
-* https://github.com/ollama/ollama
-* https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
-* https://lexxai.blogspot.com/2026/02/ollama-deproxy-ollama.html
 
-## 📄 License
+- https://github.com/ollama/ollama
+- https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
+- https://lexxai.blogspot.com/2026/02/ollama-deproxy-ollama.html
+
+## License
 
 MIT License — see the [LICENSE](LICENSE) file for details.
-

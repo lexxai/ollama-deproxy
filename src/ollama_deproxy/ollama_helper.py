@@ -3,8 +3,8 @@ import logging
 
 from starlette.requests import Request
 
-from ollama_deproxy.config import settings
-from ollama_deproxy.services import build_session
+from .config import settings
+from .services import build_session
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +20,12 @@ class OllamaHelper:
     based on external data sources.
     """
 
-    def __init__(self, session=None):
+    MODEL_PATH = "api/tags"
+
+    def __init__(self, session=None, response_cache=None):
         self.models: list[dict] | None = None
         self.session = session
+        self.response_cache = response_cache
 
     def set_session(self, session):
         self.session = session
@@ -81,9 +84,22 @@ class OllamaHelper:
             request (Request, optional): An optional request object for the function. Defaults to None.
         """
         if self.models is None:
-            path = "api/tags"
+            path = self.MODEL_PATH
             method = "GET"
-            body_bytes = await self.get_request(path, method=method)
+
+            # if request is None:
+            #     logger.error(f"request is None for path: {path}")
+            #     return
+
+            cached = None
+            if self.response_cache is not None:
+                cached = await self.response_cache.get_cache(path, method=method)
+            if cached:
+                body_bytes = cached.get("content")
+                status_code = cached.get("status_code", 200)
+                headers = cached.get("headers", {})
+            else:
+                body_bytes, status_code, headers = await self.get_request(path, method=method)
             if body_bytes:
                 try:
                     data = json.loads(body_bytes.decode())
@@ -92,6 +108,10 @@ class OllamaHelper:
             else:
                 data = {}
             if data:
+                if self.response_cache is not None:
+                    await self.response_cache.set_cache(
+                        path, content=body_bytes, status_code=status_code, headers=headers, method=method
+                    )
                 self.models = data.get("models")
                 self.models = sorted(self.models, key=lambda x: x.get("modified_at"), reverse=True)
                 for i, m in enumerate(self.models):
