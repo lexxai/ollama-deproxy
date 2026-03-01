@@ -18,12 +18,15 @@ def build_proxy_headers(request: Request):
     return proxy_headers
 
 
-async def handler_root_response(path: str, request: Request, session, ollama_helper: OllamaHelper):
+async def handler_root_response(
+    path: str, request: Request, session, ollama_helper: OllamaHelper, decode_response: bool = None
+):
     # logger.debug(f"Handling root request for path: {path}")
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
 
     method = request.method
     query_params = request.query_params
+    decode_response = decode_response or settings.decode_response
 
     proxy_headers = build_proxy_headers(request)
 
@@ -31,7 +34,7 @@ async def handler_root_response(path: str, request: Request, session, ollama_hel
 
     debug_requests_data(body_bytes, method, target_url)
 
-    if settings.correct_numbered_model_names:
+    if settings.correct_numbered_model_names and not path.startswith(ollama_helper.MODEL_PATH):
         body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
         proxy_headers["content-length"] = str(len(body_bytes))
 
@@ -44,7 +47,7 @@ async def handler_root_response(path: str, request: Request, session, ollama_hel
             params=query_params,
             follow_redirects=False,
         ) as response:
-            if settings.decode_response:
+            if decode_response:
                 await response.aread()
                 response_content = response.content
                 # logger.debug(f"Response session.headers: {session.headers}")
@@ -65,7 +68,7 @@ async def handler_root_response(path: str, request: Request, session, ollama_hel
     return Response(
         content=response_content,
         status_code=response.status_code,
-        headers=filter_headers(response.headers),
+        headers=filter_headers(response.headers, decode_response=decode_response),
     )
 
 
