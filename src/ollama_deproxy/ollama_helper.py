@@ -30,9 +30,7 @@ class OllamaHelper:
     def set_session(self, session):
         self.session = session
 
-    async def get_request(
-        self, path, method: str = "GET", body_bytes: bytes = None, query_params=None
-    ) -> tuple[bytes, int, dict]:
+    async def get_request(self, path, method: str = "GET", body_bytes: bytes = None, query_params=None) -> bytes:
         """
         Asynchronous function to execute an HTTP request to the provided path using the specified method.
 
@@ -57,7 +55,7 @@ class OllamaHelper:
         """
         if self.session is None:
             logger.error("Session not initialized")
-            return b"", 500, {}
+            return b""
         target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
         proxy_headers = {}
         response = await self.session.request(
@@ -71,10 +69,7 @@ class OllamaHelper:
             logger.error(
                 f"Error [{response.status_code}] on '{target_url}' with data: {body_bytes.decode()} : {response.text}"
             )
-        headers = response.headers
-        if headers:
-            headers.pop("content-encoding", None)
-        return response.content, response.status_code, headers
+        return response.content
 
     async def get_models(self, request: Request = None):
         """
