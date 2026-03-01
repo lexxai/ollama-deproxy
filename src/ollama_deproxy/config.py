@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, HttpUrl, Field, field_validator, SecretStr, ConfigDict
 
 BASE_PATH = Path(__file__).parent.parent
-
 load_dotenv(BASE_PATH.parent / ".env")
 
 
@@ -56,7 +55,7 @@ class Settings(BaseModel):
 
 settings = Settings()
 
-print(f"Ollama DeProxy {settings.app_version}")
+print(f"Ollama DeProxy v{settings.app_version}")
 
 
 # from pprint import pprint

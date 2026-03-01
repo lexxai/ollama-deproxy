@@ -86,15 +86,15 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
     #     async for chunk in request.stream():
     #         yield chunk
 
-    body_bytes = await request.body() if request else b""
-
-    debug_requests_data(body_bytes, method, target_url)
-
-    if settings.correct_numbered_model_names:
-        body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
-        proxy_headers["content-length"] = str(len(body_bytes))
-
     try:
+        body_bytes = await request.body() if request else b""
+
+        debug_requests_data(body_bytes, method, target_url)
+
+        if settings.correct_numbered_model_names:
+            body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
+            proxy_headers["content-length"] = str(len(body_bytes))
+
         stream_ctx = session.stream(
             method=method,
             url=target_url,

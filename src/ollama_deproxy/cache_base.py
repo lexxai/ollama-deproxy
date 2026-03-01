@@ -15,6 +15,8 @@ class CacheBase:
     """Thread-safe response cache with TTL support."""
 
     def __init__(self, maxsize: int = None, ttl: int = None):
+        if not settings.cache_enabled:
+            return
         maxsize = maxsize or settings.cache_maxsize
         ttl = ttl or settings.cache_ttl
         self._cache = TTLCache(maxsize=maxsize, ttl=ttl)
@@ -26,6 +28,9 @@ class CacheBase:
             )
         else:
             logger.info("Cache key hash algorithm selected: %s", self.selected_algo)
+
+    def is_cached(self, path):
+        return settings.cache_enabled
 
     def body_hash_hex_digest(self, body: bytes) -> str:
         h = hashlib.new(self.selected_algo)
@@ -75,5 +80,7 @@ class CacheBase:
 
     def clear(self):
         """Clear the cache."""
+        if getattr(self, "_lock", None) is None:
+            return
         with self._lock:
             self._cache.clear()

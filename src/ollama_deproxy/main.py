@@ -13,6 +13,9 @@ from .lifespan import lifespan
 setup_logging()
 
 logger = logging.getLogger(__name__)
+logger.debug(
+    f"Starting Ollama DeProxy with DEBUG logging... DEBUG_REQUEST={settings.debug_request},CACHE_ENABLED={settings.cache_enabled} "
+)
 
 app = FastAPI(
     title="Ollama DeProxy",
