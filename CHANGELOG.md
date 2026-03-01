@@ -1,6 +1,16 @@
 Changelog
 =====================
 
+## [0.3.0] - 2026-02-28
+### Added
+* Caching of model names and their corresponding Ollama API endpoints
+* Autodetection is the best hash algorithm for this platform
+* Environment variables `CACHE_ENABLED`, `CACHE_MAXSIZE`, `CACHE_TTL`, `HASH_ALGORITHM`
+
+### Changed
+* Bumped a version to `0.3.0`
+* Updated `ENVIRONMENT.md` to document new environment variables and usage details
+
 ## [0.2.0] - 2026-02-27
 
 ### Added
