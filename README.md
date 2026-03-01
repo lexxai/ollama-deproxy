@@ -202,6 +202,19 @@ The proxy includes a built-in caching system to improve performance for frequent
 * **CACHE_ENABLED**
 * **CACHE_MAXSIZE**
 * **CACHE_TTL**
+* **HASH_ALGORITHM**
+  Includes automatic hash algorithm detection to identify the optimal cache key generation method for your platform and
+  architecture.
+    ```bash
+    uv run ollama-deproxy
+    Ollama DeProxy v0.3.0
+    INFO:     Started server process [29256]
+    INFO:     Waiting for application startup.
+    INFO:ollama_deproxy.best_hash:Cache key hash algorithm auto-selection...
+    INFO:ollama_deproxy.cache_base:Cache key hash algorithm auto-selection complete. Can store it on .env file 'HASH_ALGORITHM=blake2b' for skip autodetection next time.
+    INFO:     Application startup complete.
+    INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
+    ```
 
 **Cached Endpoints:**
 

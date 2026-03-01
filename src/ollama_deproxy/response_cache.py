@@ -14,8 +14,7 @@ class ResponseCache(CacheBase):
     CACHED_PATHS = ("api/tags", "api/models", "api/show")
 
     def is_cached(self, path: str) -> bool:
-        """Check if the given path should be cached."""
-        return any(path.lower().startswith(cached) for cached in self.CACHED_PATHS)
+        return super().is_cached(path) and any(path.lower().startswith(cached) for cached in self.CACHED_PATHS)
 
     async def get_or_fetch(
         self, request: Request, path: str, session, ollama_helper, body: bytes = None
@@ -44,8 +43,8 @@ class ResponseCache(CacheBase):
         # Fetch not streaming response if not cached
         response = await handler_root_response(path, request, session, ollama_helper, decode_response=True)
         headers = dict(response.headers)
-        # headers.pop("content-encoding", None)
-        # headers["content-length"] = str(len(response.body))
+        headers.pop("content-encoding", None)
+        headers["content-length"] = str(len(response.body))
         # logger.debug(f"headers: {headers}")
 
         # Cache the response if valid
