@@ -10,11 +10,12 @@ def build_session():
 
     headers["user-agent"] = f"Ollama-DeProxy/{settings.app_version};httpx/{httpx.__version__}"
 
-
     limits = httpx.Limits(
-        max_keepalive_connections=50,
-        max_connections=1000,
+        max_connections=1000,  # Total allowed connections
+        max_keepalive_connections=100,  # Allow more idle connections to stay open
+        keepalive_expiry=5.0,
     )
+
     timeout = httpx.Timeout(settings.remote_timeout) if settings.remote_timeout is not None else None
 
     return httpx.AsyncClient(
