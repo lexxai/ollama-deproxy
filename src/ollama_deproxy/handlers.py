@@ -19,7 +19,7 @@ def build_proxy_headers(request: Request):
 
 
 async def handler_root_response(
-    path: str, request: Request, session, ollama_helper: OllamaHelper, decode_response: bool = None
+    path: str, request: Request, client, ollama_helper: OllamaHelper, decode_response: bool = None
 ):
     # logger.debug(f"Handling root request for path: {path}")
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
@@ -39,7 +39,7 @@ async def handler_root_response(
         proxy_headers["content-length"] = str(len(body_bytes))
 
     try:
-        async with session.stream(
+        async with client.stream(
             method=method,
             url=target_url,
             headers=proxy_headers,
@@ -55,6 +55,8 @@ async def handler_root_response(
                 response_content = b"".join([chunk async for chunk in response.aiter_raw()])
     except Exception as e:
         logger.error(f"handler_root_response: {e}")
+        if str(e).startswith("Max outbound streams"):
+            raise
         return Response(
             content="Error remote side",
             status_code=500,
@@ -72,7 +74,7 @@ async def handler_root_response(
     )
 
 
-async def handler_root_stream_response(path: str, request: Request, session, ollama_helper: OllamaHelper):
+async def handler_root_stream_response(path: str, request: Request, client, ollama_helper: OllamaHelper):
     # logger.debug(f"Handling root stream request for path: {path}")
 
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
@@ -95,7 +97,7 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
             proxy_headers["content-length"] = str(len(body_bytes))
 
-        stream_ctx = session.stream(
+        stream_ctx = client.stream(
             method=method,
             url=target_url,
             headers=proxy_headers,
@@ -105,7 +107,9 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
         )
         response = await stream_ctx.__aenter__()
     except Exception as e:
-        logger.error(f"handler_root_response: {e}")
+        logger.error(f"handler_root_stream_response: {e}")
+        if str(e).startswith("Max outbound streams"):
+            raise
         return Response(
             content="Error remote side",
             status_code=500,
