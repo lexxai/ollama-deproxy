@@ -1,6 +1,15 @@
 Changelog
 =====================
 
+## [0.3.1] - 2026-03-05
+### Added 
+* if error for max_connections exceeded: `http_connection.re_connect()` 
+* `get_duration_str` for logging duration of requests
+* introduce `http_connection` and `semaphore`
+* now Datetime in each logger message
+* Bumped a version to `0.3.1`
+
+
 ## [0.3.0] - 2026-02-28
 ### Added
 * Caching of model names and their corresponding Ollama API endpoints
@@ -18,7 +27,7 @@ Changelog
 * Graceful handling of empty Ollama requests (e.g., sent by PyCharm AI Assistant)
 * `OllamaHelper` class to encapsulate model name correction and request utilities
 * Support for automatic correction of numbered model names (e.g., `4` → `qwen3-coder-next:latest`) when used with the GitHub Copilot plugin
-  * Controlled via `CORRECT_NUMBERED_MODEL_NAMES` in `.env` (default: `false`)
+0  * Controlled via `CORRECT_NUMBERED_MODEL_NAMES` in `.env` (default: `false`)
 * Optional request logging for debugging
   * Controlled via `DEBUG_REQUEST` in `.env` (default: `false`)
 

@@ -29,6 +29,8 @@ class Settings(BaseModel):
     cache_ttl: int = Field(default=environ.get("CACHE_TTL", 60 * 60 * 12))  # 12 hours
     hash_algorithm: str = Field(default=environ.get("HASH_ALGORITHM", "auto"))
 
+    limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
+
     @field_validator("hash_algorithm", mode="before")
     @classmethod
     def normalize_hash_algorithm(cls, v):
