@@ -1,9 +1,9 @@
 from starlette.requests import Request
 
 
-def get_session(request: Request):
+def get_http_connection(request: Request):
     app = request.app
-    return app.state.session
+    return app.state.http_connection
 
 
 def get_ollama_helper(request: Request):
@@ -14,3 +14,8 @@ def get_ollama_helper(request: Request):
 def get_response_cache(request: Request):
     app = request.app
     return app.state.response_cache
+
+
+def get_semaphore(request: Request):
+    app = request.app
+    return app.state.semaphore

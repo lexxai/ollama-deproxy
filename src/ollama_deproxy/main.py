@@ -6,7 +6,7 @@ from starlette.responses import Response
 
 from .config import settings
 from .config_logging import setup_logging
-from .depends import get_session, get_ollama_helper, get_response_cache
+from .depends import get_semaphore, get_ollama_helper, get_response_cache, get_http_connection
 from .handlers import handler_root_response, handler_root_stream_response
 from .lifespan import lifespan
 
@@ -19,7 +19,7 @@ logger.debug(
 
 app = FastAPI(
     title="Ollama DeProxy",
-    version=settings.app_version,
+    version=settings.app_version or "0.0.1",
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
@@ -33,22 +33,32 @@ ollama_compatible_prefixes = {"api", "v1"}
 async def root(
     path: str,
     request: Request,
-    session=Depends(get_session),
+    http_connection=Depends(get_http_connection),
     ollama_helper=Depends(get_ollama_helper),
     response_cache=Depends(get_response_cache),
+    semaphore=Depends(get_semaphore),
 ):
     path_split = path.split("/", maxsplit=1)[0]
     if path_split == "":
         return Response("Ollama is running")
 
-    cached_response = await response_cache.get_or_fetch(request, path, session, ollama_helper)
+    client = await http_connection.get_client()
+
+    cached_response = await response_cache.get_or_fetch(request, path, client, ollama_helper)
     if cached_response is not None:
         return cached_response
 
     if not (path_split == "" or path_split in ollama_compatible_prefixes):
         path = "v1/" + path
         logger.debug(f"Proxying request corrected to '{path}' for OpenAI compatibility")
-    if settings.stream_response:
-        return await handler_root_stream_response(path, request, session, ollama_helper)
-    else:
-        return await handler_root_response(path, request, session, ollama_helper)
+    async with semaphore:
+        try:
+            logger.debug(f"*** Handling request for path: /{path}")
+            if settings.stream_response:
+                return await handler_root_stream_response(path, request, client, ollama_helper)
+            else:
+                return await handler_root_response(path, request, client, ollama_helper)
+        except Exception as e:
+            logger.error(f"root: {e} {type(e)}, try reconnection")
+            await http_connection.re_connect()
+            raise

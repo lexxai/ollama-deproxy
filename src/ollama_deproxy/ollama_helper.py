@@ -3,8 +3,8 @@ import logging
 
 from starlette.requests import Request
 
+from ollama_deproxy.services import build_http_connection
 from .config import settings
-from .services import build_session
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +22,13 @@ class OllamaHelper:
 
     MODEL_PATH = "api/tags"
 
-    def __init__(self, session=None, response_cache=None):
+    def __init__(self, client=None, response_cache=None):
         self.models: list[dict] | None = None
-        self.session = session
+        self.client = client
         self.response_cache = response_cache
 
-    def set_session(self, session):
-        self.session = session
+    def set_client(self, client):
+        self.client = client
 
     async def get_request(self, path, method: str = "GET", body_bytes: bytes = None, query_params=None) -> bytes:
         """
@@ -53,12 +53,12 @@ class OllamaHelper:
         bytes
             The response content from the HTTP request.
         """
-        if self.session is None:
-            logger.error("Session not initialized")
+        if self.client is None:
+            logger.error("Client not initialized")
             return b""
         target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
         proxy_headers = {}
-        response = await self.session.request(
+        response = await self.client.request(
             method=method,
             url=target_url,
             headers=proxy_headers,
@@ -230,8 +230,9 @@ if __name__ == "__main__":
     ollama_helper = OllamaHelper()
 
     async def test():
-        session = build_session()
-        ollama_helper.set_session(session)
+        http_connection = build_http_connection()
+        client = http_connection.get_client()
+        ollama_helper.set_client(client)
         # await ollama_helper.get_models()
         model_name = await ollama_helper.get_model_name(12)
         logger.info("Model name: %s", model_name)

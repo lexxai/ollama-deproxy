@@ -1,4 +1,5 @@
 import logging
+import time
 
 from starlette.background import BackgroundTask
 from starlette.requests import Request
@@ -18,8 +19,16 @@ def build_proxy_headers(request: Request):
     return proxy_headers
 
 
+def get_duration_str(start_time: float):
+    duration = time.perf_counter() - start_time
+    minutes = int(duration // 60)
+    seconds = duration - (minutes * 60)
+    duration_str = f"{minutes:02d}:{seconds:04.1f}"
+    return duration_str
+
+
 async def handler_root_response(
-    path: str, request: Request, session, ollama_helper: OllamaHelper, decode_response: bool = None
+    path: str, request: Request, client, ollama_helper: OllamaHelper, decode_response: bool = None
 ):
     # logger.debug(f"Handling root request for path: {path}")
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
@@ -37,9 +46,9 @@ async def handler_root_response(
     if settings.correct_numbered_model_names and not path.startswith(ollama_helper.MODEL_PATH):
         body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
         proxy_headers["content-length"] = str(len(body_bytes))
-
+    start_time = time.perf_counter()
     try:
-        async with session.stream(
+        async with client.stream(
             method=method,
             url=target_url,
             headers=proxy_headers,
@@ -55,10 +64,15 @@ async def handler_root_response(
                 response_content = b"".join([chunk async for chunk in response.aiter_raw()])
     except Exception as e:
         logger.error(f"handler_root_response: {e}")
+        if str(e).startswith("Max outbound streams"):
+            raise
         return Response(
             content="Error remote side",
             status_code=500,
         )
+    finally:
+        duration_str = get_duration_str(start_time)
+        logger.debug(f"*** Finished response for /{path} in {duration_str}")
 
     if response.status_code >= 400:
         logger.error(
@@ -72,7 +86,7 @@ async def handler_root_response(
     )
 
 
-async def handler_root_stream_response(path: str, request: Request, session, ollama_helper: OllamaHelper):
+async def handler_root_stream_response(path: str, request: Request, client, ollama_helper: OllamaHelper):
     # logger.debug(f"Handling root stream request for path: {path}")
 
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
@@ -85,7 +99,7 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
     # async def request_body():
     #     async for chunk in request.stream():
     #         yield chunk
-
+    start_time = time.perf_counter()
     try:
         body_bytes = await request.body() if request else b""
 
@@ -95,7 +109,7 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
             proxy_headers["content-length"] = str(len(body_bytes))
 
-        stream_ctx = session.stream(
+        stream_ctx = client.stream(
             method=method,
             url=target_url,
             headers=proxy_headers,
@@ -105,7 +119,9 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
         )
         response = await stream_ctx.__aenter__()
     except Exception as e:
-        logger.error(f"handler_root_response: {e}")
+        logger.error(f"handler_root_stream_response: {e}")
+        if str(e).startswith("Max outbound streams"):
+            raise
         return Response(
             content="Error remote side",
             status_code=500,
@@ -131,9 +147,14 @@ async def handler_root_stream_response(path: str, request: Request, session, oll
     # --- SUCCESS PATH ---
     response_aiter_method = response.aiter_bytes() if settings.decode_response else response.aiter_raw()
 
+    async def cleanup_and_log():
+        await stream_ctx.__aexit__(None, None, None)
+        duration_str = get_duration_str(start_time)
+        logger.debug(f"*** Finished up stream for /{path} in {duration_str}")
+
     return StreamingResponse(
         response_aiter_method,
         status_code=response.status_code,
         headers=filter_headers(response.headers),
-        background=BackgroundTask(stream_ctx.__aexit__, None, None, None),
+        background=BackgroundTask(cleanup_and_log),
     )
