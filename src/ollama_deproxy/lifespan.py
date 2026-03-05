@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from .response_cache import ResponseCache
 from .ollama_helper import OllamaHelper
 from .response_cache import ResponseCache
 from .services import build_semaphore, build_http_connection
