@@ -10,7 +10,7 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class HttpConnectionOptions:
     base_url = str(settings.remote_url)
     retries: int = 10

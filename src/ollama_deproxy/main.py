@@ -53,6 +53,7 @@ async def root(
         logger.debug(f"Proxying request corrected to '{path}' for OpenAI compatibility")
     async with semaphore:
         try:
+            logger.debug(f"*** Handling request for path: /{path}")
             if settings.stream_response:
                 return await handler_root_stream_response(path, request, client, ollama_helper)
             else:

@@ -1,10 +1,13 @@
 Changelog
 =====================
 
-## [0.3.1] - 2026-03-02
+## [0.3.1] - 2026-03-05
 ### Added 
-* now Datetime in each logger messages
-* Bumped version to `0.3.1`
+* if error for max_connections exceeded: `http_connection.re_connect()` 
+* `get_duration_str` for logging duration of requests
+* introduce `http_connection` and `semaphore`
+* now Datetime in each logger message
+* Bumped a version to `0.3.1`
 
 
 ## [0.3.0] - 2026-02-28
