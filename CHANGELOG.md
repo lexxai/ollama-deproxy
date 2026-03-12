@@ -1,6 +1,15 @@
 Changelog
 =====================
 
+## [0.4.0] - 2026-03-12
+
+### Added
+
+* Environment variables `PATH_PROXY_OLLAMA` (default: `ollama/`) and `PATH_API` (default: `api/`) for configurable path prefixes
+* Function `gen_path()` to dynamically generate proxy and API paths with automatic prefix detection
+* Support for `anthropic_compatibility_prefixes` to handle Anthropic API path corrections (e.g., `v1/messages`)
+* Automatic path correction for Anthropic and OpenAI compatible endpoints
+
 ## [0.3.1] - 2026-03-05
 ### Added 
 * if error for max_connections exceeded: `http_connection.re_connect()` 
