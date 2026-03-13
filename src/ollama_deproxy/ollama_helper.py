@@ -30,7 +30,9 @@ class OllamaHelper:
     def set_client(self, client):
         self.client = client
 
-    async def get_request(self, path, method: str = "GET", body_bytes: bytes = None, query_params=None) -> bytes:
+    async def get_request(
+        self, path, method: str = "GET", body_bytes: bytes = None, query_params=None
+    ) -> bytes:
         """
         Asynchronous function to execute an HTTP request to the provided path using the specified method.
 
@@ -99,7 +101,9 @@ class OllamaHelper:
                 status_code = cached.get("status_code", 200)
                 headers = cached.get("headers", {})
             else:
-                body_bytes, status_code, headers = await self.get_request(path, method=method)
+                body_bytes, status_code, headers = await self.get_request(
+                    path, method=method
+                )
             if body_bytes:
                 try:
                     data = json.loads(body_bytes.decode())
@@ -110,10 +114,16 @@ class OllamaHelper:
             if data:
                 if self.response_cache is not None:
                     await self.response_cache.set_cache(
-                        path, content=body_bytes, status_code=status_code, headers=headers, method=method
+                        path,
+                        content=body_bytes,
+                        status_code=status_code,
+                        headers=headers,
+                        method=method,
                     )
                 self.models = data.get("models")
-                self.models = sorted(self.models, key=lambda x: x.get("modified_at"), reverse=True)
+                self.models = sorted(
+                    self.models, key=lambda x: x.get("modified_at"), reverse=True
+                )
                 for i, m in enumerate(self.models):
                     name = m.get("name")
                     logger.debug(f"{i}:{name}")

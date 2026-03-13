@@ -10,7 +10,9 @@ def setup_logging():
 
     stream_handler = logging.StreamHandler()
     formatter = uvicorn.logging.DefaultFormatter(  # type: ignore
-        "%(asctime)s %(levelprefix)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", use_colors=True
+        "%(asctime)s %(levelprefix)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        use_colors=True,
     )
     stream_handler.setFormatter(formatter)
     logger = logging.getLogger()

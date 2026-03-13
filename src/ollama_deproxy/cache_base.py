@@ -44,7 +44,9 @@ class CacheBase:
             return f"{path}:{method}:{body_hash}".lower()
         return f"{path}:{method}".lower()
 
-    async def async_build_cache_key(self, path: str, method: str, body: bytes = None) -> str:
+    async def async_build_cache_key(
+        self, path: str, method: str, body: bytes = None
+    ) -> str:
         return await run_in_threadpool(self.build_cache_key, path, method, body)
 
     async def set_cache(
@@ -58,7 +60,9 @@ class CacheBase:
         status_code: int = None,
     ):
         if cache_key is not None or self.is_cached(path):
-            cache_key = cache_key or await self.async_build_cache_key(path, method, body)
+            cache_key = cache_key or await self.async_build_cache_key(
+                path, method, body
+            )
             with self._lock:
                 if cache_key not in self._cache:
                     self._cache[cache_key] = {
@@ -68,9 +72,13 @@ class CacheBase:
                     }
                     logger.debug(f"Cache set for key: {cache_key[:25]}...")
 
-    async def get_cache(self, path: str, cache_key: str = None, method: str = None, body: bytes = None) -> dict | None:
+    async def get_cache(
+        self, path: str, cache_key: str = None, method: str = None, body: bytes = None
+    ) -> dict | None:
         if cache_key is not None or self.is_cached(path):
-            cache_key = cache_key or await self.async_build_cache_key(path, method, body)
+            cache_key = cache_key or await self.async_build_cache_key(
+                path, method, body
+            )
             with self._lock:
                 cached = self._cache.get(cache_key)
                 if cached is not None:
