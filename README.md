@@ -173,8 +173,8 @@ Build and install as a distributable package:
 ```bash
 uv build
 # Outputs:
-# Successfully built dist/ollama_deproxy-0.1.0.tar.gz
-# Successfully built dist/ollama_deproxy-0.1.0-py3-none-any.whl
+# Successfully built dist/ollama_deproxy-x.y.z.tar.gz
+# Successfully built dist/ollama_deproxy-x.y.z-py3-none-any.whl
 ```
 
 Then run the CLI directly:
@@ -208,7 +208,7 @@ The proxy includes a built-in caching system to improve performance for frequent
   architecture.
     ```bash
     uv run ollama-deproxy
-    Ollama DeProxy v0.4.0
+    Ollama DeProxy vx.y.z
     INFO:     Started server process [29256]
     INFO:     Waiting for application startup.
     INFO:ollama_deproxy.best_hash:Cache key hash algorithm auto-selection...
@@ -252,7 +252,7 @@ Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 LOG_LEVEL=DEBUG
 ````
 ```bash
-Ollama DeProxy v0.4.0
+Ollama DeProxy vx.y.z
 2026-03-13 15:34:08 DEBUG:    Starting Ollama DeProxy with DEBUG logging... DEBUG_REQUEST=False,CACHE_ENABLED=True
 2026-03-13 15:34:08 INFO:     Started server process [43460]
 2026-03-13 15:34:08 INFO:     Waiting for application startup.
