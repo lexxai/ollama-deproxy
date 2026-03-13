@@ -1,4 +1,5 @@
 import importlib.metadata
+from pydantic import ValidationError
 
 try:
     __version__ = importlib.metadata.version("ollama-deproxy")
@@ -6,10 +7,10 @@ except importlib.metadata.PackageNotFoundError:
     # Fallback for when the package is not "installed" (e.g., during local dev)
     def __getattr__(name):
         if name == "__version__":
-            from .config import settings
+            from .get_version import app_version
 
             print(f"Using version from settings")
-            return settings.app_version
+            return app_version()
         raise AttributeError(f"module {__name__} has no attribute {name}")
 
 
@@ -18,22 +19,12 @@ def run():
     import argparse
     from time import sleep
     import os
-    import sys
     from pathlib import Path
 
     import uvicorn
     from dotenv import load_dotenv
 
-    def print_header():
-        from .get_version import app_version
-
-        """Print decorative header with icons to console."""
-        print("\n" + "=" * 60)
-        print(f"🚀 Ollama DeProxy Server v{app_version()}")
-        print("=" * 60)
-        if sys.platform == "win32":
-            os.system(f"title Ollama DeProxy Server 🚀 [{__version__}]")
-        print()
+    from .utils import print_header, decode_error
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
     parser.add_argument("--remote-url", type=str, help="Override REMOTE_URL environment variable")
@@ -77,7 +68,10 @@ def run():
     print_header()
 
     while True:
-        uvicorn.run("ollama_deproxy.main:app", host="0.0.0.0", port=port, reload=False, log_config=None)
+        try:
+            uvicorn.run("ollama_deproxy.main:app", host="0.0.0.0", port=port, reload=False, log_config=None)
+        except ValidationError as e:
+            decode_error(e)
         try:
             print("\n\nSleeping for 10 sec before restarting server. Press Ctrl+C to exit.")
             sleep(10)

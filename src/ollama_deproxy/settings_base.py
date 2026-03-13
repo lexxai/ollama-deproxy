@@ -1,0 +1,45 @@
+from os import environ
+
+from pydantic import BaseModel, ConfigDict, HttpUrl, Field, SecretStr, field_validator
+
+from .get_version import app_version
+
+
+class Settings(BaseModel):
+    model_config = ConfigDict(validate_default=True)
+
+    remote_url: HttpUrl = Field(default=environ.get("REMOTE_URL"))
+    path_proxy_ollama: str = Field(default=environ.get("PATH_PROXY_OLLAMA", "ollama/"))
+    path_api: str = Field(default=environ.get("PATH_API", "api/"))
+    remote_url_http2: bool = Field(default=environ.get("REMOTE_URL_HTTP2", True))
+    remote_auth_header: str = Field(default=environ.get("REMOTE_AUTH_HEADER", "Authorization"))
+    remote_auth_token: SecretStr | None = Field(default=environ.get("REMOTE_AUTH_TOKEN"))
+    remote_timeout: int | None = Field(default=environ.get("REMOTE_TIMEOUT", None))
+    local_port: int = Field(default=environ.get("LOCAL_PORT", "11434"))
+    log_level: str = Field(default=environ.get("LOG_LEVEL", "INFO"))
+    app_version: str | None = Field(default=None)
+    stream_response: bool = Field(default=environ.get("STREAM_RESPONSE", True))
+    decode_response: bool = Field(default=environ.get("DECODE_RESPONSE", False))
+    debug_request: bool = Field(default=environ.get("DEBUG_REQUEST", False))
+    correct_numbered_model_names: bool = Field(default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False))
+
+    cache_enabled: bool = Field(default=environ.get("CACHE_ENABLED", True))
+    cache_maxsize: int = Field(default=environ.get("CACHE_MAXSIZE", 512))  # 512 entries
+    cache_ttl: int = Field(default=environ.get("CACHE_TTL", 60 * 60 * 12))  # 12 hours
+    hash_algorithm: str = Field(default=environ.get("HASH_ALGORITHM", "auto"))
+
+    limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
+
+    @field_validator("hash_algorithm", mode="before")
+    @classmethod
+    def normalize_hash_algorithm(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator("app_version", mode="before")
+    @classmethod
+    def fill_version(cls, v):
+        if not v:
+            v = app_version()
+        return v
