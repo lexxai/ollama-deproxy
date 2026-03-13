@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class ResponseCache(CacheBase):
-
     CACHED_PATHS = (
         settings.path_proxy_ollama + "api/tags",
         settings.path_proxy_ollama + "api/models",
@@ -19,7 +18,9 @@ class ResponseCache(CacheBase):
     )
 
     def is_cached(self, path: str) -> bool:
-        return super().is_cached(path) and any(path.lower().startswith(cached) for cached in self.CACHED_PATHS)
+        return super().is_cached(path) and any(
+            path.lower().startswith(cached) for cached in self.CACHED_PATHS
+        )
 
     async def get_or_fetch(
         self, request: Request, path: str, session, ollama_helper, body: bytes = None
@@ -46,7 +47,9 @@ class ResponseCache(CacheBase):
             )
 
         # Fetch not streaming response if not cached
-        response = await handler_root_response(path, request, session, ollama_helper, decode_response=True)
+        response = await handler_root_response(
+            path, request, session, ollama_helper, decode_response=True
+        )
         headers = dict(response.headers)
         headers.pop("content-encoding", None)
         headers["content-length"] = str(len(response.body))
@@ -55,7 +58,11 @@ class ResponseCache(CacheBase):
         # Cache the response if valid
         if isinstance(response, Response):
             await self.set_cache(
-                path, cache_key=cache_key, content=response.body, status_code=response.status_code, headers=headers
+                path,
+                cache_key=cache_key,
+                content=response.body,
+                status_code=response.status_code,
+                headers=headers,
             )
 
         return response

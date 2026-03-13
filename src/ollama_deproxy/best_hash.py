@@ -55,7 +55,11 @@ class BestHash:
             best_seconds = min(timings)
 
             total_bytes = data_size_bytes * number_iterations
-            mib_per_sec = (total_bytes / (1024 * 1024)) / best_seconds if best_seconds > 0 else 0.0
+            mib_per_sec = (
+                (total_bytes / (1024 * 1024)) / best_seconds
+                if best_seconds > 0
+                else 0.0
+            )
             results[name] = mib_per_sec
             logger.debug(f"Measured {name} hash speed:{mib_per_sec:.2f} MiB/s")
 

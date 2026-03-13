@@ -10,4 +10,6 @@ def build_http_connection():
 
 
 def build_semaphore():
-    return asyncio.Semaphore(settings.limit_concurrency)  # Stay safely under the 100 limit
+    return asyncio.Semaphore(
+        settings.limit_concurrency
+    )  # Stay safely under the 100 limit
