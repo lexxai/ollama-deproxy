@@ -1,5 +1,6 @@
 import logging
 
+from .config import settings
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -11,7 +12,11 @@ logger = logging.getLogger(__name__)
 
 class ResponseCache(CacheBase):
 
-    CACHED_PATHS = ("api/tags", "api/models", "api/show")
+    CACHED_PATHS = (
+        settings.path_proxy_ollama + "api/tags",
+        settings.path_proxy_ollama + "api/models",
+        settings.path_proxy_ollama + "api/show",
+    )
 
     def is_cached(self, path: str) -> bool:
         return super().is_cached(path) and any(path.lower().startswith(cached) for cached in self.CACHED_PATHS)
