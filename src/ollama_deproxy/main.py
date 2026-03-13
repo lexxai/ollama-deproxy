@@ -27,6 +27,28 @@ app = FastAPI(
 )
 
 ollama_compatible_prefixes = {"api", "v1"}
+anthropic_compatibility_prefixes = ("v1/messages",)
+
+
+def gen_path(path: str):
+    path_split = path.split("/", maxsplit=1)[0]
+    if path_split == "":
+        return path, path_split
+
+    for prefix in anthropic_compatibility_prefixes:
+        if path.startswith(prefix):
+            path = settings.path_api + path
+            logger.debug(f"Proxying request corrected to '{path}' for Anthropic compatibility")
+            return path, path_split
+
+    if path_split in ollama_compatible_prefixes:
+        path = settings.path_proxy_ollama + path
+        return path, path_split
+
+    path = settings.path_proxy_ollama + "v1/" + path
+    logger.debug(f"Proxying request corrected to '{path}' for OpenAI compatibility")
+
+    return path, path_split
 
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
@@ -38,7 +60,7 @@ async def root(
     response_cache=Depends(get_response_cache),
     semaphore=Depends(get_semaphore),
 ):
-    path_split = path.split("/", maxsplit=1)[0]
+    path, path_split = gen_path(path)
     if path_split == "":
         return Response("Ollama is running")
 
@@ -48,9 +70,6 @@ async def root(
     if cached_response is not None:
         return cached_response
 
-    if not (path_split == "" or path_split in ollama_compatible_prefixes):
-        path = "v1/" + path
-        logger.debug(f"Proxying request corrected to '{path}' for OpenAI compatibility")
     async with semaphore:
         try:
             logger.debug(f"*** Handling request for path: /{path}")

@@ -8,16 +8,29 @@ Create a `.env` file based on `.env.example` and adjust the values as needed.
 ## Remote Connection (Required)
 
 ### `REMOTE_URL` **(required)**  
-Remote Ollama API endpoint.
+Remote Proxy API endpoint. In general it OpenWeb UI API endpoint.
 
 Example:
 ```dotenv
-REMOTE_URL=https://openwebui.example.com/ollama
-````
+REMOTE_URL=https://openwebui.example.com
+```
 
 This should point to the upstream Ollama-compatible API (for example, one exposed by OpenWebUI).
 
 ---
+### `PATH_PROXY_OLLAMA`
+Prefix for Ollama-compatible API paths.
+
+```dotenv
+PATH_PROXY_OLLAMA=ollama/
+```
+
+### `PATH_API`
+Prefix for API paths.
+
+```dotenv
+#PATH_API=api/
+```
 
 ### `REMOTE_AUTH_TOKEN`
 
@@ -179,7 +192,7 @@ DEBUG_REQUEST=False
 ### `CORRECT_NUMBERED_MODEL_NAMES`
 
 If models are numbered, try to replace them to string representation of an Ollama list.
-This is useful for Copilot Plugin from GitHub that uses numbered model names instead of string.
+This is useful for Copilot Plugin from GitHub (bugged version) that uses numbered model names instead of string.
 Default: False
 ```dotenv
 CORRECT_NUMBERED_MODEL_NAMES=False
@@ -273,8 +286,12 @@ HASH_ALGORITHM=blake2b
 
 At minimum, you must define:
 
-```bash
+```dotenv
 REMOTE_URL=...
 ```
+and 
 
+```dotenv
+REMOTE_AUTH_TOKEN=
+```
 Everything else has safe defaults.

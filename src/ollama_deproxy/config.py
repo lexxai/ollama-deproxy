@@ -12,6 +12,8 @@ class Settings(BaseModel):
     model_config = ConfigDict(validate_default=True)
 
     remote_url: HttpUrl = Field(default=environ.get("REMOTE_URL"))
+    path_proxy_ollama: str = Field(default=environ.get("PATH_PROXY_OLLAMA", "ollama/"))
+    path_api: str = Field(default=environ.get("PATH_API", "api/"))
     remote_url_http2: bool = Field(default=environ.get("REMOTE_URL_HTTP2", True))
     remote_auth_header: str = Field(default=environ.get("REMOTE_AUTH_HEADER", "Authorization"))
     remote_auth_token: SecretStr | None = Field(default=environ.get("REMOTE_AUTH_TOKEN"))
