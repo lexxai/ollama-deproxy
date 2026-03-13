@@ -1,15 +1,51 @@
-from time import sleep
-
-
 def run():
     """Run the Ollama DeProxy application."""
+    import argparse
+    from time import sleep
     import os
     from pathlib import Path
 
     import uvicorn
     from dotenv import load_dotenv
 
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
+    parser.add_argument("--remote-url", type=str, help="Override REMOTE_URL environment variable")
+    parser.add_argument("--remote-auth-token", type=str, help="Override REMOTE_AUTH_TOKEN environment variable")
+    parser.add_argument("--local-port", type=int, help="Override local_port environment variable")
+    parser.add_argument("--log-level", type=str, help="Override log level environment variable")
+    parser.add_argument("--env_path", type=str, help="Override path to .env file")
+    parser.add_argument("--version", "-v", action="store_true", help="Version of the application")
+
+    args = parser.parse_args()
+
+    if args.version:
+        from .config import settings
+
+        # print(f"Ollama DeProxy version: {settings.app_version}")
+        return
+
+    env_path = Path(__file__).parent.parent.parent / ".env"
+
+    if args.env_path:
+        _env_path = Path(args.env_path)
+        if _env_path.exists():
+            env_path = _env_path
+        else:
+            print(f"Error: your .env file not found at {_env_path}. Used default .env file: {env_path}.")
+
+    load_dotenv(env_path)
+
+    if args.remote_url:
+        os.environ["REMOTE_URL"] = args.remote_url
+
+    if args.remote_auth_token:
+        os.environ["REMOTE_AUTH_TOKEN"] = args.remote_auth_token
+
+    if args.log_level:
+        os.environ["LOG_LEVEL"] = args.log_level
+
+    if args.local_port:
+        os.environ["LOCAL_PORT"] = str(args.local_port)
 
     port = int(os.getenv("local_port") or 11434)
     while True:

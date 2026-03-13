@@ -292,6 +292,32 @@ Restarting server...
 2026-03-13 15:41:28 INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
 ```
 
+## CLI Usage
+In CLI mode, you can use the `ollama-deproxy` command to start the server. And also can override some environment variables.
+
+```bash
+uv run ollama-deproxy --help           
+usage: ollama-deproxy [-h] [--remote-url REMOTE_URL] [--remote-auth-token REMOTE_AUTH_TOKEN]
+                      [--local-port LOCAL_PORT] [--log-level LOG_LEVEL] [--env_path ENV_PATH] [--version]
+
+Run the Ollama DeProxy application.
+
+options:
+  -h, --help            show this help message and exit
+  --remote-url REMOTE_URL
+                        Override REMOTE_URL environment variable
+  --remote-auth-token REMOTE_AUTH_TOKEN
+                        Override REMOTE_AUTH_TOKEN environment variable
+  --local-port LOCAL_PORT
+                        Override local_port environment variable
+  --log-level LOG_LEVEL
+                        Override log level environment variable
+  --env_path ENV_PATH   Override path to .env file
+  --version, -v         Version of the application
+
+```
+
+
 ---
 
 ## Reference

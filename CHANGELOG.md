@@ -5,10 +5,12 @@ Changelog
 
 ### Added
 
-* Environment variables `PATH_PROXY_OLLAMA` (default: `ollama/`) and `PATH_API` (default: `api/`) for configurable path prefixes
-* Function `gen_path()` to dynamically generate proxy and API paths with automatic prefix detection
-* Support for `anthropic_compatibility_prefixes` to handle Anthropic API path corrections (e.g., `v1/messages`)
-* Automatic path correction for Anthropic and OpenAI compatible endpoints
+* Environment variables `PATH_PROXY_OLLAMA` (default: `ollama/`) and `PATH_API` (default: `api/`) for configurable API path
+  prefixes
+* Dynamic path generation with `gen_path()` function supporting automatic prefix detection and correction
+* Anthropic API compatibility layer with automatic path correction for endpoints like `v1/messages`
+* OpenAI API compatibility with automatic path normalization for standard endpoints
+* CLI argument support for overriding environment variables (use `--help` to view available options)
 
 ## [0.3.1] - 2026-03-05
 ### Added 
