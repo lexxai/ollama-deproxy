@@ -1,7 +1,7 @@
 [project]
 name = "ollama-deproxy"
-version = "0.4.0"
-description = "For allow local usage ollama behind some proxy aka OpenWebUI"
+version = "0.4.1"
+description = "A lightweight, feature-rich proxy for Ollama, designed for development, testing, and staging environments. It simplifies access to remote Ollama instances that are wrapped behind another proxy layer like OpenWebUI. Anthropic and OpenAI compatible endpoints, included."
 requires-python = ">=3.11"
 dependencies = [
     "cachetools>=7.0.2",
@@ -12,7 +12,13 @@ dependencies = [
     "types-cachetools>=6.2.0.20251022",
     "uvicorn[standard]>=0.41.0",
 ]
-classifiers = ["Private :: Do Not Upload"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["python", "http", "rest-api", "proxy", "proxy-server", "fastapi", "openai-api", "ollama", "ollama-webui", "ollama-api", "anthropic-api", "openwebui-api"]
+
 
 [project.urls]
 Homepage = "https://github.com/lexxai/ollama-deproxy"

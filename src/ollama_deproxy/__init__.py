@@ -1,37 +1,66 @@
+import importlib.metadata
+
+from pydantic import ValidationError
+
+try:
+    __version__ = importlib.metadata.version("ollama-deproxy")
+except importlib.metadata.PackageNotFoundError:
+    # Fallback for when the package is not "installed" (e.g., during local dev)
+    def __getattr__(name):
+        if name == "__version__":
+            from .get_version import app_version
+
+            print("Using version from settings")
+            return app_version()
+        raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
 def run():
     """Run the Ollama DeProxy application."""
     import argparse
-    from time import sleep
     import os
-    import sys
     from pathlib import Path
+    from time import sleep
 
     import uvicorn
     from dotenv import load_dotenv
 
-    def print_header():
-        """Print decorative header with icons to console."""
-        print("\n" + "=" * 60)
-        print("🚀 Ollama DeProxy Server")
-        print("=" * 60)
-        if sys.platform == "win32":
-            os.system("title Ollama DeProxy Server 🚀")
-        print()
+    from .utils import decode_error, print_header
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
-    parser.add_argument("--remote-url", type=str, help="Override REMOTE_URL environment variable")
-    parser.add_argument("--remote-auth-token", type=str, help="Override REMOTE_AUTH_TOKEN environment variable")
-    parser.add_argument("--local-port", type=int, help="Override local_port environment variable")
-    parser.add_argument("--log-level", type=str, help="Override log level environment variable")
+    parser.add_argument(
+        "--remote-url", type=str, help="Override REMOTE_URL environment variable"
+    )
+    parser.add_argument(
+        "--remote-auth-token",
+        type=str,
+        help="Override REMOTE_AUTH_TOKEN environment variable",
+    )
+    parser.add_argument(
+        "--local-port",
+        type=int,
+        help="Override local_port environment variable",
+        default=11434,
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        help="Override log level environment variable, default: INFO",
+    )
+    parser.add_argument(
+        "--hash-algorithm",
+        type=str,
+        help="Override HASH_ALGORITHM environment variable, default: auto",
+    )
     parser.add_argument("--env_path", type=str, help="Override path to .env file")
-    parser.add_argument("--version", "-v", action="store_true", help="Version of the application")
+    parser.add_argument(
+        "--version", "-v", action="store_true", help="Version of the application"
+    )
 
     args = parser.parse_args()
 
     if args.version:
-        from .config import settings
-
-        # print(f"Ollama DeProxy version: {settings.app_version}")
+        print(f"Ollama DeProxy version: {__version__}")
         return
 
     env_path = Path(__file__).parent.parent.parent / ".env"
@@ -41,7 +70,9 @@ def run():
         if _env_path.exists():
             env_path = _env_path
         else:
-            print(f"Error: your .env file not found at {_env_path}. Used default .env file: {env_path}.")
+            print(
+                f"Error: your .env file not found at {_env_path}. Used default .env file: {env_path}."
+            )
 
     load_dotenv(env_path)
 
@@ -54,6 +85,9 @@ def run():
     if args.log_level:
         os.environ["LOG_LEVEL"] = args.log_level
 
+    if args.hash_algorithm:
+        os.environ["HASH_ALGORITHM"] = args.hash_algorithm
+
     if args.local_port:
         os.environ["LOCAL_PORT"] = str(args.local_port)
 
@@ -62,9 +96,21 @@ def run():
     print_header()
 
     while True:
-        uvicorn.run("ollama_deproxy.main:app", host="0.0.0.0", port=port, reload=False, log_config=None)
         try:
-            print("\n\nSleeping for 10 sec before restarting server. Press Ctrl+C to exit.")
+            uvicorn.run(
+                "ollama_deproxy.main:app",
+                host="0.0.0.0",
+                port=port,
+                reload=False,
+                log_config=None,
+            )
+        except ValidationError as e:
+            decode_error(e)
+            return
+        try:
+            print(
+                "\n\nSleeping for 10 sec before restarting server. Press Ctrl+C to exit."
+            )
             sleep(10)
             print("Restarting server...")
         except KeyboardInterrupt:

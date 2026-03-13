@@ -21,21 +21,24 @@ class HttpConnectionOptions:
 
 
 class HttpConnection:
-
     def __init__(self) -> None:
         self.client: AsyncClient | None = None
         self._lock = Lock()
         self.options = HttpConnectionOptions()
         self.headers = {"user-agent": self.options.user_agent}
         if settings.remote_auth_token:
-            self.headers[settings.remote_auth_header] = settings.remote_auth_token.get_secret_value()
+            self.headers[settings.remote_auth_header] = (
+                settings.remote_auth_token.get_secret_value()
+            )
         self.limits = Limits(
             max_connections=1000,  # Total allowed connections
             max_keepalive_connections=100,  # Allow more idle connections to stay open
             keepalive_expiry=5.0,
         )
         self.transport = AsyncHTTPTransport(retries=self.options.retries)
-        self.timeout = Timeout(self.options.timeout) if self.options.timeout is not None else None
+        self.timeout = (
+            Timeout(self.options.timeout) if self.options.timeout is not None else None
+        )
 
     async def get_client(self) -> AsyncClient:
         async with self._lock:

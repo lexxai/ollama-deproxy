@@ -169,7 +169,7 @@ ollama-deproxy
 ## Build as a Package
 
 Build and install as a distributable package:
-
+### UV
 ```bash
 uv build
 # Outputs:
@@ -177,22 +177,69 @@ uv build
 # Successfully built dist/ollama_deproxy-x.y.z-py3-none-any.whl
 ```
 
-Then run the CLI directly:
+### PIP
+
+<details>
+  <summary>Click to expand long output of build Ollama DeProxy</summary>
 
 ```bash
-uv run ollama-deproxy
-# → INFO:     Started server process [21540]
-# → INFO:     Uvicorn running on http://0.0.0.0:11434
+python -m venv .venv
+source .venv/bin/activate # or .\venv\Scripts\activate
+pip install -e .
+Obtaining file:///C:/.../ollama-deproxy
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Installing backend dependencies ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Collecting cachetools>=7.0.2 (from ollama-deproxy==0.4.1)
+  Using cached cachetools-7.0.5-py3-none-any.whl.metadata (5.6 kB)
+Collecting fastapi>=0.135.1 (from ollama-deproxy==0.4.1)
+  Using cached fastapi-0.135.1-py3-none-any.whl.metadata (30 kB)
+Collecting httpx>=0.28.1 (from httpx[brotli,http2,zstd]>=0.28.1->ollama-deproxy==0.4.1)
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+...
+Building wheels for collected packages: ollama-deproxy
+  Building editable for ollama-deproxy (pyproject.toml) ... done
+  Created wheel for ollama-deproxy: filename=ollama_deproxy-0.4.1-py3-none-any.whl size=2640 sha256=a896df60372b3a000cd802335e23a405b0c21ce96c66c8994a139309ea8c0c56
+  Stored in directory: ...\Temp\pip-ephem-wheel-cache-4tfkacrk\wheels\4e\77\b5\f2d22f84a99bda20761e769c4abe4d2465331adcc1a67f21a4
+Successfully built ollama-deproxy
+Installing collected packages: brotli, zstandard, websockets, typing-extensions, types-cachetools, pyyaml, python-multipart, python-dotenv, idna, hyperframe, httptools, hpack, h11, colorama, certifi, cachetools, annotated-types, annotated-doc, typing-inspection, pydantic-core, httpcore, h2, click, anyio, watchfiles, uvicorn, starlette, pydantic, httpx, fastapi, ollama-deproxy
+Successfully installed annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.12.1 brotli-1.2.0 cachetools-7.0.5 certifi-2026.2.25 click-8.3.1 colorama-0.4.6 fastapi-0.135.1 h11-0.16.0 h2-4.3.0 hpack-4.1.0 httpcore-1.0.9 httptools-0.7.1 httpx-0.28.1 hyperframe-6.1.0 idna-3.11 ollama-deproxy-0.4.1 pydantic-2.12.5 pydantic-core-2.41.5 python-dotenv-1.2.2 python-multipart-0.0.22 pyyaml-6.0.3 starlette-0.52.1 types-cachetools-6.2.0.20251022 typing-extensions-4.15.0 typing-inspection-0.4.2 uvicorn-0.41.0 watchfiles-1.1.1 websockets-16.0 zstandard-0.25.0
 ```
+</details>
+
+Then run the CLI directly:
+
+### UV
+```bash
+uv run --no-dev ollama-deproxy
+```
+
+### PIP
+```bash
+ollama-deproxy
+```
+
 
 Expected output:
 
 ```
-INFO:     Started server process [1422]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
-INFO:     127.0.0.1:56456 - "GET /api/tags HTTP/1.1" 200 OK
+ollama-deproxy --log-level DEBUG
+
+============================================================
+🚀 Ollama DeProxy Server vx.y.z
+============================================================
+
+2026-03-13 17:58:29 DEBUG:    Starting Ollama DeProxy with DEBUG logging... DEBUG_REQUEST=False,CACHE_ENABLED=True 
+2026-03-13 17:58:30 INFO:     Started server process [46908]
+2026-03-13 17:58:30 INFO:     Waiting for application startup.
+2026-03-13 17:58:30 INFO:     Cache key hash algorithm selected: blake2b
+2026-03-13 17:58:30 INFO:     Application startup complete.
+2026-03-13 17:58:30 INFO:     Uvicorn running on http://0.0.0.0:11434 (Press CTRL+C to quit)
+2026-03-13 17:58:41 DEBUG:    *** Finished response for /ollama/api/tags in 00:00.6
+2026-03-13 17:58:41 DEBUG:    Cache set for key: ollama/api/tags:get...
+2026-03-13 17:58:41 INFO:     127.0.0.1:37460 - "GET /api/tags HTTP/1.1" 200
 ```
 
 ## [Environment Configuration](DOCS/ENVIRONMENT.md)
@@ -251,6 +298,7 @@ Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 ```dotenv
 LOG_LEVEL=DEBUG
 ````
+
 ```bash
 Ollama DeProxy vx.y.z
 2026-03-13 15:34:08 DEBUG:    Starting Ollama DeProxy with DEBUG logging... DEBUG_REQUEST=False,CACHE_ENABLED=True
