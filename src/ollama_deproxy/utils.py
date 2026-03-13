@@ -93,8 +93,8 @@ def print_header():
 
     """Print decorative header with icons to console."""
     print("\n" + "=" * 60)
-    print(f"🚀 Ollama DeProxy Server v{app_version()}")
+    print(f"🦙 Ollama DeProxy Server v{app_version()}")
     print("=" * 60)
     if sys.platform == "win32":
-        os.system(f"title Ollama DeProxy Server 🚀 [{__version__}]")
+        os.system(f"title 👁️🦙 Ollama DeProxy v{__version__}")
     print()
