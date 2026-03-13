@@ -4,6 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import BaseModel, HttpUrl, Field, field_validator, SecretStr, ConfigDict
 
+from .get_version import app_version
+
 BASE_PATH = Path(__file__).parent.parent
 load_dotenv(BASE_PATH.parent / ".env")
 
@@ -44,16 +46,7 @@ class Settings(BaseModel):
     @classmethod
     def fill_version(cls, v):
         if not v:
-            v = "0.0.1"
-            try:
-                pyproject_file = BASE_PATH.parent / "pyproject.toml"
-                if pyproject_file.exists():
-                    import tomllib
-
-                    with pyproject_file.open("rb") as f:
-                        v = tomllib.load(f)["project"]["version"]
-            except Exception as e:
-                print(f"Error app_version: {e}")
+            v = app_version()
         return v
 
 

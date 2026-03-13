@@ -24,15 +24,15 @@ def run():
     import uvicorn
     from dotenv import load_dotenv
 
-    from .config import settings
-
     def print_header():
+        from .get_version import app_version
+
         """Print decorative header with icons to console."""
         print("\n" + "=" * 60)
-        print(f"🚀 Ollama DeProxy Server v{settings.app_version}")
+        print(f"🚀 Ollama DeProxy Server v{app_version()}")
         print("=" * 60)
         if sys.platform == "win32":
-            os.system(f"title Ollama DeProxy Server 🚀 [{settings.app_version}]")
+            os.system(f"title Ollama DeProxy Server 🚀 [{__version__}]")
         print()
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
@@ -46,7 +46,7 @@ def run():
     args = parser.parse_args()
 
     if args.version:
-        print(f"Ollama DeProxy version: {settings.app_version}")
+        print(f"Ollama DeProxy version: {__version__}")
         return
 
     env_path = Path(__file__).parent.parent.parent / ".env"
