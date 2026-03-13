@@ -12,9 +12,11 @@ anyio==4.12.1
     #   watchfiles
 brotli==1.2.0 ; platform_python_implementation == 'CPython'
     # via httpx
-brotlicffi==1.2.0.0 ; platform_python_implementation != 'CPython'
+brotlicffi==1.2.0.1 ; platform_python_implementation != 'CPython'
     # via httpx
-certifi==2026.1.4
+cachetools==7.0.5
+    # via ollama-deproxy
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
@@ -26,7 +28,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   click
     #   uvicorn
-fastapi==0.132.0
+fastapi==0.135.1
     # via ollama-deproxy
 h11==0.16.0
     # via
@@ -54,7 +56,7 @@ pydantic==2.12.5
     # via fastapi
 pydantic-core==2.41.5
     # via pydantic
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via
     #   ollama-deproxy
     #   uvicorn
@@ -64,6 +66,8 @@ pyyaml==6.0.3
     # via uvicorn
 starlette==0.52.1
     # via fastapi
+types-cachetools==6.2.0.20251022
+    # via ollama-deproxy
 typing-extensions==4.15.0
     # via
     #   anyio

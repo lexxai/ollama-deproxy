@@ -1,6 +1,6 @@
 [project]
 name = "ollama-deproxy"
-version = "0.3.1"
+version = "0.4.0"
 description = "For allow local usage ollama behind some proxy aka OpenWebUI"
 requires-python = ">=3.11"
 dependencies = [
@@ -52,4 +52,3 @@ dev = [
     "black>=26.1.0",
     "ruff>=0.15.2",
 ]
-
