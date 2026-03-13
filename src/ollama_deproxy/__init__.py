@@ -3,10 +3,20 @@ def run():
     import argparse
     from time import sleep
     import os
+    import sys
     from pathlib import Path
 
     import uvicorn
     from dotenv import load_dotenv
+
+    def print_header():
+        """Print decorative header with icons to console."""
+        print("\n" + "=" * 60)
+        print("🚀 Ollama DeProxy Server")
+        print("=" * 60)
+        if sys.platform == "win32":
+            os.system("title Ollama DeProxy Server 🚀")
+        print()
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
     parser.add_argument("--remote-url", type=str, help="Override REMOTE_URL environment variable")
@@ -48,6 +58,9 @@ def run():
         os.environ["LOCAL_PORT"] = str(args.local_port)
 
     port = int(os.getenv("local_port") or 11434)
+
+    print_header()
+
     while True:
         uvicorn.run("ollama_deproxy.main:app", host="0.0.0.0", port=port, reload=False, log_config=None)
         try:
