@@ -1,3 +1,18 @@
+import importlib.metadata
+
+try:
+    __version__ = importlib.metadata.version("ollama-deproxy")
+except importlib.metadata.PackageNotFoundError:
+    # Fallback for when the package is not "installed" (e.g., during local dev)
+    def __getattr__(name):
+        if name == "__version__":
+            from .config import settings
+
+            print(f"Using version from settings")
+            return settings.app_version
+        raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
 def run():
     """Run the Ollama DeProxy application."""
     import argparse
@@ -9,13 +24,15 @@ def run():
     import uvicorn
     from dotenv import load_dotenv
 
+    from .config import settings
+
     def print_header():
         """Print decorative header with icons to console."""
         print("\n" + "=" * 60)
-        print("🚀 Ollama DeProxy Server")
+        print(f"🚀 Ollama DeProxy Server v{settings.app_version}")
         print("=" * 60)
         if sys.platform == "win32":
-            os.system("title Ollama DeProxy Server 🚀")
+            os.system(f"title Ollama DeProxy Server 🚀 [{settings.app_version}]")
         print()
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
@@ -29,9 +46,7 @@ def run():
     args = parser.parse_args()
 
     if args.version:
-        from .config import settings
-
-        # print(f"Ollama DeProxy version: {settings.app_version}")
+        print(f"Ollama DeProxy version: {settings.app_version}")
         return
 
     env_path = Path(__file__).parent.parent.parent / ".env"

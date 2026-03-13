@@ -59,7 +59,7 @@ class Settings(BaseModel):
 
 settings = Settings()
 
-print(f"Ollama DeProxy v{settings.app_version}")
+# print(f"Ollama DeProxy v{settings.app_version}")
 
 
 # from pprint import pprint
