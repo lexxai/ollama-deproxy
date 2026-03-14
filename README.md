@@ -1,4 +1,5 @@
-# Ollama DeProxy
+# Ollama DeProxy ![GitHub Tag](https://img.shields.io/github/v/tag/lexxai/ollama-deproxy)
+
 
 A lightweight, feature-rich proxy for [**Ollama**][1], designed for development, testing, and staging environments.
 It simplifies access to remote **Ollama** instances that are wrapped behind another proxy layer.
