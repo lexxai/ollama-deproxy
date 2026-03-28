@@ -229,6 +229,7 @@ uv build
 # Successfully built dist/ollama_deproxy-x.y.z.tar.gz
 # Successfully built dist/ollama_deproxy-x.y.z-py3-none-any.whl
 ```
+</details>
 
 ### PIP
 
@@ -276,6 +277,12 @@ uv run --no-dev ollama-deproxy
 ```bash
 ollama-deproxy
 ```
+
+### PIP
+```bash
+ollama-deproxy
+```
+
 
 Expected output:
 
