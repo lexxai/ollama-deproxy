@@ -1,13 +1,13 @@
 # Ollama DeProxy ![GitHub Tag](https://img.shields.io/github/v/tag/lexxai/ollama-deproxy)
 
-
 A lightweight, feature-rich proxy for [**Ollama**][1], designed for development, testing, and staging environments.
 It simplifies access to remote **Ollama** instances that are wrapped behind another proxy layer.
 Anthropic and OpenAI compatible endpoints, included.
 
 ## Why Use It?
 
-If you're a developer working locally and need to access a remote **Ollama** instance that sits behind an application proxy such as [**OpenWebUI**][2], you may encounter:
+If you're a developer working locally and need to access a remote **Ollama** instance that sits behind an application proxy such
+as [**OpenWebUI**][2], you may encounter:
 
 - Additional authorization requirements
 - Wrapped or modified HTTP headers
@@ -25,7 +25,8 @@ It acts as a thin, configurable HTTP bridge between your local tools and the rem
 
 ## Features
 
-- **Transparent Request Forwarding**: Acts as a local HTTP server (default port `11434`) that forwards all requests to a remote Ollama-compatible API
+- **Transparent Request Forwarding**: Acts as a local HTTP server (default port `11434`) that forwards all requests to a remote
+  Ollama-compatible API
 - **Authentication Handling**: Automatically injects custom authentication headers (JWT, API Keys) to bypass upstream proxy layers
 - **Response Processing**: Supports streaming, decompression (Brotli/Gzip), and header filtering
 - **Model Name Correction**: Replaces numeric model identifiers with actual model names
@@ -35,6 +36,54 @@ It acts as a thin, configurable HTTP bridge between your local tools and the rem
 - **Anthropic and OpenAI** compatible endpoints detection
 
 ## Quick Start
+
+### UVX
+
+```bash
+pip install uv
+uvx ollama-deproxy -h
+```
+
+### UV
+
+```bash
+pip install uv
+uv venv
+uv pip install ollama-deproxy
+uv run ollama-deproxy -h
+```
+
+### PIP
+
+```bash
+mkdir ollama-deproxy
+cd ollama-deproxy
+python -m venv venv
+venv\Scripts\activate
+pip install ollama-deproxy
+ollama-deproxy -h
+usage: ollama-deproxy [-h] [--remote-url REMOTE_URL] [--remote-auth-token REMOTE_AUTH_TOKEN] [--local-port LOCAL_PORT]
+                      [--log-level LOG_LEVEL] [--hash-algorithm HASH_ALGORITHM] [--env_path ENV_PATH] [--version]
+
+Run the Ollama DeProxy application.
+
+options:
+  -h, --help            show this help message and exit
+  --remote-url REMOTE_URL
+                        Override REMOTE_URL environment variable
+  --remote-auth-token REMOTE_AUTH_TOKEN
+                        Override REMOTE_AUTH_TOKEN environment variable
+  --local-port LOCAL_PORT
+                        Override local_port environment variable
+  --log-level LOG_LEVEL
+                        Override log level environment variable, default: INFO
+  --hash-algorithm HASH_ALGORITHM
+                        Override HASH_ALGORITHM environment variable, default: auto
+  --env_path ENV_PATH   Override path to .env file
+  --version, -v         Version of the application
+```
+
+## Start from repository
 
 1. **Clone the repository**:
 
@@ -79,7 +128,8 @@ Once the container is active, your local applications can communicate with the r
 
 Local Address: http://localhost:11434
 
-Security: The proxy handles all necessary authentication headers upstream, allowing your local tools to connect seamlessly without managing API keys or complex auth logic.
+Security: The proxy handles all necessary authentication headers upstream, allowing your local tools to connect seamlessly without
+managing API keys or complex auth logic.
 
 ## Installation
 
@@ -170,7 +220,9 @@ ollama-deproxy
 ## Build as a Package
 
 Build and install as a distributable package:
+
 ### UV
+
 ```bash
 uv build
 # Outputs:
@@ -208,20 +260,22 @@ Successfully built ollama-deproxy
 Installing collected packages: brotli, zstandard, websockets, typing-extensions, types-cachetools, pyyaml, python-multipart, python-dotenv, idna, hyperframe, httptools, hpack, h11, colorama, certifi, cachetools, annotated-types, annotated-doc, typing-inspection, pydantic-core, httpcore, h2, click, anyio, watchfiles, uvicorn, starlette, pydantic, httpx, fastapi, ollama-deproxy
 Successfully installed annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.12.1 brotli-1.2.0 cachetools-7.0.5 certifi-2026.2.25 click-8.3.1 colorama-0.4.6 fastapi-0.135.1 h11-0.16.0 h2-4.3.0 hpack-4.1.0 httpcore-1.0.9 httptools-0.7.1 httpx-0.28.1 hyperframe-6.1.0 idna-3.11 ollama-deproxy-0.4.1 pydantic-2.12.5 pydantic-core-2.41.5 python-dotenv-1.2.2 python-multipart-0.0.22 pyyaml-6.0.3 starlette-0.52.1 types-cachetools-6.2.0.20251022 typing-extensions-4.15.0 typing-inspection-0.4.2 uvicorn-0.41.0 watchfiles-1.1.1 websockets-16.0 zstandard-0.25.0
 ```
+
 </details>
 
 Then run the CLI directly:
 
 ### UV
+
 ```bash
 uv run --no-dev ollama-deproxy
 ```
 
 ### PIP
+
 ```bash
 ollama-deproxy
 ```
-
 
 Expected output:
 
@@ -247,7 +301,9 @@ ollama-deproxy --log-level DEBUG
 
 ## Response Caching
 
-The proxy includes a built-in caching system to improve performance for frequently accessed endpoints controlled by environment variables:
+The proxy includes a built-in caching system to improve performance for frequently accessed endpoints controlled by environment
+variables:
+
 * **CACHE_ENABLED**
 * **CACHE_MAXSIZE**
 * **CACHE_TTL**
@@ -279,7 +335,8 @@ The proxy includes a built-in caching system to improve performance for frequent
 
 ## Error Logging & Diagnostics
 
-When the remote server returns an error (HTTP 400+), the proxy interrupts the stream to capture the full context. This allows you to see exactly why the upstream rejected your request.
+When the remote server returns an error (HTTP 400+), the proxy interrupts the stream to capture the full context. This allows you
+to see exactly why the upstream rejected your request.
 
 **Example Failure:**
 If you query a model that doesn't exist on the remote host:
@@ -296,6 +353,7 @@ Recv Body: {"detail":"Model 'qwen2.5-coder:1.5b-base1' was not found"}
 ```
 
 **Example Debug Log:**
+
 ```dotenv
 LOG_LEVEL=DEBUG
 ````
@@ -342,6 +400,7 @@ Restarting server...
 ```
 
 ## CLI Usage
+
 In CLI mode, you can use the `ollama-deproxy` command to start the server. And also can override some environment variables.
 
 ```bash
@@ -366,12 +425,12 @@ options:
 
 ```
 
-
 ---
 
 ## Reference
 
 [1]: https://github.com/ollama/ollama
+
 [2]: https://docs.openwebui.com/reference/api-endpoints#-ollama-api-proxy-support
 
 - https://github.com/ollama/ollama
