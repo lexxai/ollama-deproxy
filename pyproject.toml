@@ -1,7 +1,11 @@
 [project]
 name = "ollama-deproxy"
-version = "0.4.1"
+version = "0.4.2"
 description = "A lightweight, feature-rich proxy for Ollama, designed for development, testing, and staging environments. It simplifies access to remote Ollama instances that are wrapped behind another proxy layer like OpenWebUI. Anthropic and OpenAI compatible endpoints, included."
+authors = [{ name = "lexxai", email = "lexxai@gmail.com" }]
+license = { text = "MIT" }
+license-files = ["LICEN[CS]E*"]
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "cachetools>=7.0.2",
@@ -25,6 +29,7 @@ Homepage = "https://github.com/lexxai/ollama-deproxy"
 Documentation = "https://github.com/lexxai/ollama-deproxy#readme"
 Repository = "https://github.com/lexxai/ollama-deproxy.git"
 Issues = "https://github.com/lexxai/ollama-deproxy/issues"
+
 
 [build-system]
 requires = ["hatchling"]
