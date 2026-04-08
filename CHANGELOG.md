@@ -5,9 +5,9 @@ Changelog
 
 ### Added
 
-- environments
-    - `DEBUG_REQUEST_MODEL_ONLY` default false
-    - `REMOTE_TOTAL_TIMEOUT` default is 600 seconds or 10 min
+- New environment variables:
+    - `DEBUG_REQUEST_MODEL_ONLY`: default `false`
+    - `REMOTE_TOTAL_TIMEOUT`: default `600` seconds (10 minutes)
 
 ## [0.4.0] - 2026-03-12
 
