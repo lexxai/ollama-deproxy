@@ -1,7 +1,7 @@
 import hashlib
 from os import environ
 
-from pydantic import BaseModel, ConfigDict, HttpUrl, Field, SecretStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, field_validator
 
 from .get_version import app_version
 
@@ -22,12 +22,18 @@ class Settings(BaseModel):
         default=environ.get("REMOTE_AUTH_TOKEN")
     )
     remote_timeout: int | None = Field(default=environ.get("REMOTE_TIMEOUT", None))
+    remote_total_timeout: int | None = Field(
+        default=environ.get("REMOTE_TOTAL_TIMEOUT", 60 * 10)
+    )  # 10 minutes
     local_port: int = Field(default=environ.get("LOCAL_PORT", "11434"))
     log_level: str = Field(default=environ.get("LOG_LEVEL", "INFO"))
     app_version: str | None = Field(default=None)
     stream_response: bool = Field(default=environ.get("STREAM_RESPONSE", True))
     decode_response: bool = Field(default=environ.get("DECODE_RESPONSE", False))
     debug_request: bool = Field(default=environ.get("DEBUG_REQUEST", False))
+    debug_request_model_only: bool = Field(
+        default=environ.get("DEBUG_REQUEST_MODEL_ONLY", False)
+    )
     correct_numbered_model_names: bool = Field(
         default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False)
     )
