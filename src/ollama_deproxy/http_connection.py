@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from httpx import AsyncClient, AsyncHTTPTransport, Limits, Timeout, __version__
 
+from ollama_deproxy import utils
 from ollama_deproxy.config import settings
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ class HttpConnectionOptions:
     timeout: int = settings.remote_timeout
     http2: bool = settings.remote_url_http2
     follow_redirects: bool = True
-    user_agent: str = f"Ollama-DeProxy/{settings.app_version};httpx/{__version__}"
+    user_agent: str = f"Ollama-DeProxy/{utils.app_version};httpx/{__version__}"
 
 
 class HttpConnection:

@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 
+from . import utils
 from .config import settings
 from .config_logging import setup_logging
 from .depends import (
@@ -25,7 +26,7 @@ logger.debug(
 
 app = FastAPI(
     title="Ollama DeProxy",
-    version=settings.app_version or "0.0.1",
+    version=utils.app_version or "0.0.1",
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
