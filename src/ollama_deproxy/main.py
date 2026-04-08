@@ -1,16 +1,17 @@
+import asyncio
 import logging
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 
 from .config import settings
 from .config_logging import setup_logging
 from .depends import (
-    get_semaphore,
+    get_http_connection,
     get_ollama_helper,
     get_response_cache,
-    get_http_connection,
+    get_semaphore,
 )
 from .handlers import handler_root_response, handler_root_stream_response
 from .lifespan import lifespan
@@ -85,11 +86,25 @@ async def root(
         try:
             logger.debug(f"*** Handling request for path: /{path}")
             if settings.stream_response:
-                return await handler_root_stream_response(
-                    path, request, client, ollama_helper
+                response = await asyncio.wait_for(
+                    handler_root_stream_response(path, request, client, ollama_helper),
+                    timeout=settings.remote_total_timeout,
                 )
+                return response
+                # return await handler_root_stream_response(
+                #     path, request, client, ollama_helper
+                # )
             else:
-                return await handler_root_response(path, request, client, ollama_helper)
+                response = await asyncio.wait_for(
+                    handler_root_response(path, request, client, ollama_helper),
+                    timeout=settings.remote_total_timeout,
+                )
+                return response
+                # return await handler_root_response(path, request, client, ollama_helper)
+        except asyncio.TimeoutError:
+            logger.error(
+                f"The request took longer than {settings.remote_total_timeout} seconds total!"
+            )
         except Exception as e:
             logger.error(f"root: {e} {type(e)}, try reconnection")
             await http_connection.re_connect()

@@ -1,11 +1,10 @@
 import logging
 from asyncio import Lock
+from dataclasses import dataclass
 
-from httpx import AsyncClient, __version__, Limits, Timeout, AsyncHTTPTransport
+from httpx import AsyncClient, AsyncHTTPTransport, Limits, Timeout, __version__
 
 from ollama_deproxy.config import settings
-
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,9 @@ class HttpConnection:
         )
         self.transport = AsyncHTTPTransport(retries=self.options.retries)
         self.timeout = (
-            Timeout(self.options.timeout) if self.options.timeout is not None else None
+            Timeout(self.options.timeout, connect=5.0)
+            if self.options.timeout is not None
+            else None
         )
 
     async def get_client(self) -> AsyncClient:

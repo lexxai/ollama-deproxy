@@ -1,6 +1,6 @@
 [project]
 name = "ollama-deproxy"
-version = "0.4.2"
+version = "0.4.3"
 description = "A lightweight, feature-rich proxy for Ollama, designed for development, testing, and staging environments. It simplifies access to remote Ollama instances that are wrapped behind another proxy layer like OpenWebUI. Anthropic and OpenAI compatible endpoints, included."
 authors = [{ name = "lexxai", email = "lexxai@gmail.com" }]
 license = { text = "MIT" }

@@ -46,7 +46,7 @@ def filter_headers(headers, decode_response: bool = None):
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
     from .config import settings
 
-    if settings.debug_request:
+    if settings.debug_request or settings.debug_request_model_only:
         if body_bytes:
             try:
                 data = json.loads(body_bytes.decode())
@@ -54,9 +54,14 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
                 data = body_bytes.decode()
         else:
             data = ""
-        logger.debug(
-            f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
-        )
+        if settings.debug_request_model_only:
+            model = data.get("model") if isinstance(data, dict) else None
+            if model:
+                logger.debug(f"Proxying request with model: {model} ")
+        else:
+            logger.debug(
+                f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
+            )
 
 
 def decode_error(e):
