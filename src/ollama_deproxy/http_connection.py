@@ -21,7 +21,14 @@ class HttpConnectionOptions:
 
 
 class HttpConnection:
+    """Manages the asynchronous HTTP connection to the Ollama server.
+
+    Handles client initialization, connection limits, transport setup, and connection
+    reconnection logic using asyncio locks for thread safety.
+    """
+
     def __init__(self) -> None:
+        """Initializes the HttpConnection with configured settings."""
         self.client: AsyncClient | None = None
         self._lock = Lock()
         self.options = HttpConnectionOptions()
@@ -43,6 +50,13 @@ class HttpConnection:
         )
 
     async def get_client(self) -> AsyncClient:
+        """Retrieves the initialized or newly created AsyncClient.
+
+        This method ensures that the client is only created once and is protected by a lock.
+
+        Returns:
+            AsyncClient: The active asynchronous HTTP client.
+        """
         async with self._lock:
             if self.client is None:
                 self.client = AsyncClient(
@@ -57,17 +71,27 @@ class HttpConnection:
             return self.client
 
     async def re_connect(self) -> AsyncClient:
+        """Reestablishes the connection to the Ollama server.
+
+        Logs the reconnection attempt and ensures the client is closed before attempting
+        to create a new one.
+
+        Returns:
+            AsyncClient: The newly established asynchronous HTTP client.
+        """
         logger.info("Reconnecting to Ollama server...")
         async with self._lock:
             await self._close_unlocked()
             return await self.get_client()
 
     async def _close_unlocked(self):
+        """Closes the existing AsyncClient if it is open and sets the reference to None."""
         if self.client is not None:
             await self.client.aclose()
             self._client = None
 
     async def aclose(self):
+        """Asynchronously closes the HTTP client connection."""
         async with self._lock:
             await self._close_unlocked()
 
