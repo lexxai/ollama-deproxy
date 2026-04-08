@@ -12,6 +12,11 @@ load_dotenv(BASE_PATH.parent / ".env")
 
 
 class Settings(BaseModel):
+    """Application settings for the Ollama DeProxy service.
+
+    Configuration parameters are loaded from environment variables.
+    """
+
     model_config = ConfigDict(validate_default=True)
 
     remote_url: HttpUrl = Field(

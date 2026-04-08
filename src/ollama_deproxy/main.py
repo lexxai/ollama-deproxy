@@ -26,7 +26,7 @@ logger.debug(
 
 app = FastAPI(
     title="Ollama DeProxy",
-    version=utils.app_version or "0.0.1",
+    version=utils.app_version() or "0.0.1",
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
@@ -38,6 +38,15 @@ anthropic_compatibility_prefixes = ("v1/messages",)
 
 
 def gen_path(path: str):
+    """
+    Determines the correct path prefix for proxying based on Ollama or Anthropic compatibility.
+
+    Args:
+        path: The incoming request path.
+
+    Returns:
+        A tuple containing the modified path string and the path split by the first slash.
+    """
     path_split = path.split("/", maxsplit=1)[0]
     if path_split == "":
         return path, path_split
@@ -71,6 +80,21 @@ async def root(
     response_cache=Depends(get_response_cache),
     semaphore=Depends(get_semaphore),
 ):
+    """
+    Handles all incoming API requests by routing them through the path generation,
+    caching, and actual response handling logic.
+
+    Args:
+        path: The requested API path.
+        request: The incoming Starlette Request object.
+        http_connection: Dependency for HTTP connection management.
+        ollama_helper: Dependency for Ollama interaction helper.
+        response_cache: Dependency for response caching.
+        semaphore: Dependency for concurrency limiting.
+
+    Returns:
+        The final HTTP Response object.
+    """
     path, path_split = gen_path(path)
     if path_split == "":
         return Response("Ollama is running")
