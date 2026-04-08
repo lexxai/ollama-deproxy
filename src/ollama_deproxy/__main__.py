@@ -1,7 +1,7 @@
 try:
-    from __init__ import run
+    from cli import run
 except ImportError:
-    from .__init__ import run
+    from .cli import run
 
 if __name__ == "__main__":
     run()
