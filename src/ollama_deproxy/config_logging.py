@@ -6,6 +6,12 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logging():
+    """Configures the application's logging system.
+
+    Sets up a stream handler for Uvicorn logging, configures the format,
+    sets the logger level based on settings, and configures specific log levels
+    for system packages and the uvicorn error logger.
+    """
     import uvicorn
 
     stream_handler = logging.StreamHandler()

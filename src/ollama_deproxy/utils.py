@@ -46,7 +46,7 @@ def filter_headers(headers, decode_response: bool = None):
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
     from .config import settings
 
-    if settings.debug_request:
+    if settings.debug_request or settings.debug_request_model_only:
         if body_bytes:
             try:
                 data = json.loads(body_bytes.decode())
@@ -54,9 +54,14 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
                 data = body_bytes.decode()
         else:
             data = ""
-        logger.debug(
-            f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
-        )
+        if settings.debug_request_model_only:
+            model = data.get("model") if isinstance(data, dict) else None
+            if model:
+                logger.debug(f"Proxying request with model: {model} ")
+        else:
+            logger.debug(
+                f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
+            )
 
 
 def decode_error(e):
@@ -89,8 +94,6 @@ def print_header():
     import os
     import sys
 
-    from .get_version import app_version
-
     """Print decorative header with icons to console."""
     print("\n" + "=" * 60)
     print(f"🦙 Ollama DeProxy Server v{app_version()}")
@@ -98,3 +101,21 @@ def print_header():
     if sys.platform == "win32":
         os.system(f"title 👁️🦙 Ollama DeProxy v{__version__}")
     print()
+
+
+def app_version():
+    from pathlib import Path
+
+    BASE_PATH = Path(__file__).parent.parent
+
+    v = __version__ or "0.0.1"
+    try:
+        pyproject_file = BASE_PATH.parent / "pyproject.toml"
+        if pyproject_file.exists():
+            import tomllib
+
+            with pyproject_file.open("rb") as f:
+                v = tomllib.load(f)["project"]["version"]
+    except Exception as e:
+        print(f"Error app_version: {e}")
+    return v

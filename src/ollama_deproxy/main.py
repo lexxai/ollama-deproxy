@@ -1,16 +1,18 @@
+import asyncio
 import logging
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 
+from . import utils
 from .config import settings
 from .config_logging import setup_logging
 from .depends import (
-    get_semaphore,
+    get_http_connection,
     get_ollama_helper,
     get_response_cache,
-    get_http_connection,
+    get_semaphore,
 )
 from .handlers import handler_root_response, handler_root_stream_response
 from .lifespan import lifespan
@@ -24,7 +26,7 @@ logger.debug(
 
 app = FastAPI(
     title="Ollama DeProxy",
-    version=settings.app_version or "0.0.1",
+    version=utils.app_version() or "0.0.1",
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
@@ -36,6 +38,15 @@ anthropic_compatibility_prefixes = ("v1/messages",)
 
 
 def gen_path(path: str):
+    """
+    Determines the correct path prefix for proxying based on Ollama or Anthropic compatibility.
+
+    Args:
+        path: The incoming request path.
+
+    Returns:
+        A tuple containing the modified path string and the path split by the first slash.
+    """
     path_split = path.split("/", maxsplit=1)[0]
     if path_split == "":
         return path, path_split
@@ -69,6 +80,21 @@ async def root(
     response_cache=Depends(get_response_cache),
     semaphore=Depends(get_semaphore),
 ):
+    """
+    Handles all incoming API requests by routing them through the path generation,
+    caching, and actual response handling logic.
+
+    Args:
+        path: The requested API path.
+        request: The incoming Starlette Request object.
+        http_connection: Dependency for HTTP connection management.
+        ollama_helper: Dependency for Ollama interaction helper.
+        response_cache: Dependency for response caching.
+        semaphore: Dependency for concurrency limiting.
+
+    Returns:
+        The final HTTP Response object.
+    """
     path, path_split = gen_path(path)
     if path_split == "":
         return Response("Ollama is running")
@@ -85,11 +111,25 @@ async def root(
         try:
             logger.debug(f"*** Handling request for path: /{path}")
             if settings.stream_response:
-                return await handler_root_stream_response(
-                    path, request, client, ollama_helper
+                response = await asyncio.wait_for(
+                    handler_root_stream_response(path, request, client, ollama_helper),
+                    timeout=settings.remote_total_timeout,
                 )
+                return response
+                # return await handler_root_stream_response(
+                #     path, request, client, ollama_helper
+                # )
             else:
-                return await handler_root_response(path, request, client, ollama_helper)
+                response = await asyncio.wait_for(
+                    handler_root_response(path, request, client, ollama_helper),
+                    timeout=settings.remote_total_timeout,
+                )
+                return response
+                # return await handler_root_response(path, request, client, ollama_helper)
+        except asyncio.TimeoutError:
+            logger.error(
+                f"The request took longer than {settings.remote_total_timeout} seconds total!"
+            )
         except Exception as e:
             logger.error(f"root: {e} {type(e)}, try reconnection")
             await http_connection.re_connect()
