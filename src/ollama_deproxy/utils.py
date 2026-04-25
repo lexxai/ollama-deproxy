@@ -1,5 +1,6 @@
 import json
 import logging
+from encodings import johab
 
 from . import __version__
 
@@ -54,14 +55,26 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
                 data = body_bytes.decode()
         else:
             data = ""
-        if settings.debug_request_model_only:
+        if data and settings.debug_request_model_only:
             model = data.get("model") if isinstance(data, dict) else None
             if model:
                 logger.debug(f"Proxying request with model: {model} ")
+            if (
+                settings.force_model is not None
+                and settings.mirage_model is not None
+                and model == settings.mirage_model
+            ):
+                data["model"] = settings.force_model
+                logger.debug(
+                    f"Proxying request replaced by model: {settings.force_model} "
+                )
+                return json.dumps(data).encode()
+
         else:
             logger.debug(
                 f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
             )
+        return None
 
 
 def decode_error(e):

@@ -55,6 +55,14 @@ class Settings(BaseModel):
         default=environ.get("HASH_ALGORITHM", "auto"),
         description="Hash algorithm to use for caching. Set to 'auto' to use the default algorithm.",
     )
+    force_model: str | None = Field(
+        default=environ.get("FORCE_MODEL", None),
+        description="Relace used model in query request.",
+    )
+    mirage_model: str | None = Field(
+        default=environ.get("MIRAGE_MODEL", None),
+        description="add to list of models mirage model in query request.",
+    )
 
     limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
 

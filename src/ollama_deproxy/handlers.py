@@ -7,7 +7,7 @@ from starlette.responses import Response, StreamingResponse
 
 from .config import settings
 from .ollama_helper import OllamaHelper
-from .utils import filter_headers, debug_requests_data
+from .utils import debug_requests_data, filter_headers
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,10 @@ async def handler_root_response(
 
     body_bytes = await request.body() if request else b""
 
-    debug_requests_data(body_bytes, method, target_url)
+    debug_response = debug_requests_data(body_bytes, method, target_url)
+    if debug_response is not None:
+        body_bytes = debug_response
+        proxy_headers["content-length"] = str(len(body_bytes))
 
     if settings.correct_numbered_model_names and not path.startswith(
         ollama_helper.MODEL_PATH
@@ -113,7 +116,10 @@ async def handler_root_stream_response(
     try:
         body_bytes = await request.body() if request else b""
 
-        debug_requests_data(body_bytes, method, target_url)
+        debug_response = debug_requests_data(body_bytes, method, target_url)
+        if debug_response is not None:
+            body_bytes = debug_response
+            proxy_headers["content-length"] = str(len(body_bytes))
 
         if settings.correct_numbered_model_names:
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)

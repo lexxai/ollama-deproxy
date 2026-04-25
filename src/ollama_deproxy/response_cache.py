@@ -1,10 +1,11 @@
+import json
 import logging
 
-from .config import settings
 from starlette.requests import Request
 from starlette.responses import Response
 
 from .cache_base import CacheBase
+from .config import settings
 from .handlers import handler_root_response
 
 logger = logging.getLogger(__name__)
@@ -50,8 +51,30 @@ class ResponseCache(CacheBase):
         response = await handler_root_response(
             path, request, session, ollama_helper, decode_response=True
         )
-        headers = dict(response.headers)
+        headers: dict[str, str] = dict(response.headers)
         headers.pop("content-encoding", None)
+        if settings.force_model is not None and (mirage_model := settings.mirage_model):
+            data = json.loads(response.body)
+            models: list = data.get("models", [])
+            for m in models:
+                f_model = m.get("name")
+                if f_model and (f_model == settings.force_model):
+                    dm = dict(m)
+                    dm["name"] = mirage_model
+                    dm["model"] = mirage_model
+                    models.append(dm)
+                    overlay_body = json.dumps(data).encode()
+                    headers["content-length"] = str(len(overlay_body))
+                    new_response = Response(
+                        content=overlay_body,
+                        status_code=response.status_code,
+                        headers=headers,
+                        media_type=response.media_type,
+                    )
+                    response = new_response
+                    logger.debug(f"Added mirage model to model list: {mirage_model}")
+                    break
+
         headers["content-length"] = str(len(response.body))
         # logger.debug(f"headers: {headers}")
 
@@ -60,7 +83,7 @@ class ResponseCache(CacheBase):
             await self.set_cache(
                 path,
                 cache_key=cache_key,
-                content=response.body,
+                content=overlay_body or response.body,
                 status_code=response.status_code,
                 headers=headers,
             )

@@ -4,6 +4,7 @@ import logging
 from starlette.requests import Request
 
 from ollama_deproxy.services import build_http_connection
+
 from .config import settings
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,7 @@ class OllamaHelper:
             else:
                 data = {}
             if data:
+                # if settings.force_model is not None:
                 if self.response_cache is not None:
                     await self.response_cache.set_cache(
                         path,
@@ -233,6 +235,7 @@ class OllamaHelper:
 
 if __name__ == "__main__":
     import asyncio
+
     from ollama_deproxy.config_logging import setup_logging
 
     setup_logging()
