@@ -1,6 +1,7 @@
 import hashlib
 from os import environ
 from pathlib import Path
+from typing import Iterable
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, field_validator
@@ -59,8 +60,8 @@ class Settings(BaseModel):
         default=environ.get("FORCE_MODEL", None),
         description="Relace used model in query request.",
     )
-    mirage_model: str | None = Field(
-        default=environ.get("MIRAGE_MODEL", None),
+    mirage_models: list[str] | set[str] | str | None = Field(
+        default=environ.get("MIRAGE_MODELS", None),
         description="add to list of models mirage model in query request.",
     )
 
@@ -93,4 +94,13 @@ class Settings(BaseModel):
     def fill_version(cls, v):
         if not v:
             v = app_version()
+        return v
+
+    @field_validator("mirage_models")
+    @classmethod
+    def mirage_models_fill(cls, v):
+        if v:
+            if isinstance(v, str):
+                v = v.replace("[", "").replace("]", "")
+                return {mc for m in v.split(",") if (mc := m.strip())}
         return v

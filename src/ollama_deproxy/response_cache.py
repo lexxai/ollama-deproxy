@@ -53,27 +53,35 @@ class ResponseCache(CacheBase):
         )
         headers: dict[str, str] = dict(response.headers)
         headers.pop("content-encoding", None)
-        if settings.force_model is not None and (mirage_model := settings.mirage_model):
+
+        # replace models mode
+        if (
+            settings.force_model is not None
+            and (mirage_models := settings.mirage_models) is not None
+        ):
             data = json.loads(response.body)
             models: list = data.get("models", [])
             for m in models:
                 f_model = m.get("name")
-                if f_model and (f_model == settings.force_model):
+                if not f_model or (f_model != settings.force_model):
+                    continue
+                for mirage in mirage_models:
                     dm = dict(m)
-                    dm["name"] = mirage_model
-                    dm["model"] = mirage_model
+                    dm["name"] = mirage
+                    dm["model"] = mirage
                     models.append(dm)
-                    overlay_body = json.dumps(data).encode()
-                    headers["content-length"] = str(len(overlay_body))
-                    new_response = Response(
-                        content=overlay_body,
-                        status_code=response.status_code,
-                        headers=headers,
-                        media_type=response.media_type,
-                    )
-                    response = new_response
-                    logger.debug(f"Added mirage model to model list: {mirage_model}")
-                    break
+                    logger.debug(f"Added mirage model to model list: {mirage}")
+
+                overlay_body = json.dumps(data).encode()
+                headers["content-length"] = str(len(overlay_body))
+                new_response = Response(
+                    content=overlay_body,
+                    status_code=response.status_code,
+                    headers=headers,
+                    media_type=response.media_type,
+                )
+                response = new_response
+                break
 
         headers["content-length"] = str(len(response.body))
         # logger.debug(f"headers: {headers}")
@@ -83,7 +91,7 @@ class ResponseCache(CacheBase):
             await self.set_cache(
                 path,
                 cache_key=cache_key,
-                content=overlay_body or response.body,
+                content=response.body,
                 status_code=response.status_code,
                 headers=headers,
             )

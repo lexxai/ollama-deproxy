@@ -61,8 +61,8 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
                 logger.debug(f"Proxying request with model: {model} ")
             if (
                 settings.force_model is not None
-                and settings.mirage_model is not None
-                and model == settings.mirage_model
+                and settings.mirage_models is not None
+                and model in settings.mirage_models
             ):
                 data["model"] = settings.force_model
                 logger.debug(
