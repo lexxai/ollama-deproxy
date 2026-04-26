@@ -1,8 +1,6 @@
 import json
 import logging
-from encodings import johab
 
-from . import __version__
 
 excluded_headers = {
     "content-length",
@@ -23,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 def filter_headers(headers, decode_response: bool = None):
-    from .config import settings
+    from ollama_deproxy.core.config import settings
 
     if (
         decode_response is not None
@@ -45,7 +43,7 @@ def filter_headers(headers, decode_response: bool = None):
 
 
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
-    from .config import settings
+    from ollama_deproxy.core.config import settings
 
     if settings.debug_request or settings.debug_request_model_only:
         if body_bytes:
@@ -78,7 +76,7 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
 
 
 def decode_error(e):
-    from .settings_base import Settings
+    from ollama_deproxy.core.settings import Settings
 
     for error in e.errors():
         field_name = ".".join(str(loc) for loc in error["loc"])
@@ -112,6 +110,7 @@ def print_header():
     print(f"🦙 Ollama DeProxy Server v{app_version()}")
     print("=" * 60)
     if sys.platform == "win32":
+        from ollama_deproxy import __version__
         os.system(f"title 👁️🦙 Ollama DeProxy v{__version__}")
     print()
 
@@ -119,9 +118,9 @@ def print_header():
 def app_version():
     from pathlib import Path
 
-    BASE_PATH = Path(__file__).parent.parent
+    BASE_PATH = Path(__file__).parent.parent.parent
 
-    v = __version__ or "0.0.1"
+    v = "0.0.1"
     try:
         pyproject_file = BASE_PATH.parent / "pyproject.toml"
         if pyproject_file.exists():

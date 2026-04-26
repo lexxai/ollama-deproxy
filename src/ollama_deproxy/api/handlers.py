@@ -1,13 +1,13 @@
 import logging
 import time
 
+from fastapi.requests import Request
+from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
-from starlette.requests import Request
-from starlette.responses import Response, StreamingResponse
 
-from .config import settings
-from .ollama_helper import OllamaHelper
-from .utils import debug_requests_data, filter_headers
+from ..core.config import settings
+from ..services.ollama import OllamaHelper
+from ..utils.common import debug_requests_data, filter_headers
 
 logger = logging.getLogger(__name__)
 

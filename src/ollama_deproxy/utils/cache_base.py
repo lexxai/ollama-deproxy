@@ -5,8 +5,8 @@ import threading
 from cachetools import TTLCache
 from starlette.concurrency import run_in_threadpool
 
-from .best_hash import BestHash
-from .config import settings
+from ..core.config import settings
+from ..utils.hashing import BestHash
 
 logger = logging.getLogger(__name__)
 

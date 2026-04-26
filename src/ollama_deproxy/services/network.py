@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from httpx import AsyncClient, AsyncHTTPTransport, Limits, Timeout, __version__
 
-from ollama_deproxy import utils
-from ollama_deproxy.config import settings
+from ..core.config import settings
+from ..utils import common as utils
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class HttpConnection:
         """Closes the existing AsyncClient if it is open and sets the reference to None."""
         if self.client is not None:
             await self.client.aclose()
-            self._client = None
+            self.client = None
 
     async def aclose(self):
         """Asynchronously closes the HTTP client connection."""

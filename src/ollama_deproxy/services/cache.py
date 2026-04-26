@@ -4,9 +4,9 @@ import logging
 from starlette.requests import Request
 from starlette.responses import Response
 
-from .cache_base import CacheBase
-from .config import settings
-from .handlers import handler_root_response
+from ..api.handlers import handler_root_response
+from ..core.config import settings
+from ..utils.cache_base import CacheBase
 
 logger = logging.getLogger(__name__)
 

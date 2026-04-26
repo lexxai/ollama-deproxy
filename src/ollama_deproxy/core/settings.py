@@ -1,12 +1,11 @@
 import hashlib
 from os import environ
 from pathlib import Path
-from typing import Iterable
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, field_validator
 
-from .utils import app_version
+from ..utils.common import app_version
 
 BASE_PATH = Path(__file__).parent.parent
 load_dotenv(BASE_PATH.parent / ".env")
