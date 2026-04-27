@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def filter_headers(headers, decode_response: bool = None):
-    from ollama_deproxy.core.config import settings
+    from ..core.config import settings
 
     if (
         decode_response is not None
@@ -42,7 +42,7 @@ def filter_headers(headers, decode_response: bool = None):
 
 
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
-    from ollama_deproxy.core.config import settings
+    from ..core.config import settings
 
     if settings.debug_request or settings.debug_request_model_only:
         if body_bytes:
@@ -74,7 +74,7 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
 
 
 def decode_error(e):
-    from ollama_deproxy.core.settings import Settings
+    from ..core.settings import Settings
 
     for error in e.errors():
         field_name = ".".join(str(loc) for loc in error["loc"])
