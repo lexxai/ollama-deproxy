@@ -13,7 +13,7 @@ def run():
     import uvicorn
     from dotenv import load_dotenv
 
-    from .utils import decode_error, print_header
+    from .utils.common import decode_error, print_header
 
     parser = argparse.ArgumentParser(description="Run the Ollama DeProxy application.")
     parser.add_argument(

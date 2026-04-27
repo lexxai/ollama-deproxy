@@ -1,11 +1,13 @@
 import hashlib
+import json
+from json import JSONDecodeError
 from os import environ
 from pathlib import Path
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, field_validator
 
-from .utils import app_version
+from ..utils.common import app_version
 
 BASE_PATH = Path(__file__).parent.parent
 load_dotenv(BASE_PATH.parent / ".env")
@@ -55,6 +57,10 @@ class Settings(BaseModel):
         default=environ.get("HASH_ALGORITHM", "auto"),
         description="Hash algorithm to use for caching. Set to 'auto' to use the default algorithm.",
     )
+    mirage_models_dict: dict[str, str] | None = Field(
+        default=environ.get("MIRAGE_MODELS_DICT", None),
+        description="A dictionary mapping source model to destination model for mirage requests. Format: 'src1:dst1,src2:dst2'.",
+    )
 
     limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
 
@@ -86,3 +92,35 @@ class Settings(BaseModel):
         if not v:
             v = app_version()
         return v
+
+    @field_validator("mirage_models_dict", mode="before")
+    @classmethod
+    def mirage_models_dict_fill(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v
+        if isinstance(v, str):
+            try:
+                v = json.loads(v)
+                return v
+            except JSONDecodeError:
+                ...
+            result = {}
+            v = v.replace("{", "").replace("}", "")
+            # Split by comma to handle multiple pairs (src:dst)
+            pairs = v.strip().strip("'").split(",")
+            for pair in pairs:
+                pair = pair.strip()
+                if ":" in pair:
+                    key_value = pair.split("|", 1)
+                    if len(key_value) == 2:
+                        result[key_value[0].strip().strip('"')] = (
+                            key_value[1].strip().strip('"')
+                        )
+            return result
+        return v
+
+
+if __name__ == "__main__":
+    print(Settings())

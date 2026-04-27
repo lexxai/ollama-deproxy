@@ -3,9 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .response_cache import ResponseCache
-from .ollama_helper import OllamaHelper
-from .services import build_semaphore, build_http_connection
+from ollama_deproxy.core.services import build_http_connection, build_semaphore
+
+from ..services.cache import ResponseCache
+from ..services.ollama import OllamaHelper
 
 logger = logging.getLogger(__name__)
 

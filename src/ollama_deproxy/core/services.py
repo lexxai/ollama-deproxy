@@ -1,8 +1,7 @@
 import asyncio
 
-
+from ..services.network import HttpConnection
 from .config import settings
-from .http_connection import HttpConnection
 
 
 def build_http_connection():

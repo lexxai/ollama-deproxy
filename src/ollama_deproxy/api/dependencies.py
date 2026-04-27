@@ -1,4 +1,4 @@
-from starlette.requests import Request
+from fastapi.requests import Request
 
 
 def get_http_connection(request: Request):
