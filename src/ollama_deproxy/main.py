@@ -12,10 +12,8 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 opt = f"DEBUG_REQUEST={settings.debug_request},CACHE_ENABLED={settings.cache_enabled}"
-if settings.force_model is not None:
-    opt += f", force_model={settings.force_model} "
-if settings.mirage_models is not None:
-    opt += f", mirage_models={settings.mirage_models} "
+if settings.mirage_models_dict is not None:
+    opt += f", mirage_models_dict={settings.mirage_models_dict} "
 logger.debug(f"Starting Ollama DeProxy with DEBUG logging... {opt}")
 
 app = FastAPI(

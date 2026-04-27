@@ -1,4 +1,6 @@
 import hashlib
+import json
+from json import JSONDecodeError
 from os import environ
 from pathlib import Path
 
@@ -55,13 +57,9 @@ class Settings(BaseModel):
         default=environ.get("HASH_ALGORITHM", "auto"),
         description="Hash algorithm to use for caching. Set to 'auto' to use the default algorithm.",
     )
-    force_model: str | None = Field(
-        default=environ.get("FORCE_MODEL", None),
-        description="Relace used model in query request.",
-    )
-    mirage_models: list[str] | set[str] | str | None = Field(
-        default=environ.get("MIRAGE_MODELS", None),
-        description="add to list of models mirage model in query request.",
+    mirage_models_dict: dict[str, str] | str | None = Field(
+        default=environ.get("MIRAGE_MODELS_DICT", None),
+        description="A dictionary mapping source model to destination model for mirage requests. Format: 'src1:dst1,src2:dst2'.",
     )
 
     limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
@@ -95,11 +93,34 @@ class Settings(BaseModel):
             v = app_version()
         return v
 
-    @field_validator("mirage_models")
+    @field_validator("mirage_models_dict", mode="after")
     @classmethod
-    def mirage_models_fill(cls, v):
-        if v:
-            if isinstance(v, str):
-                v = v.replace("[", "").replace("]", "")
-                return {mc for m in v.split(",") if (mc := m.strip())}
+    def mirage_models_dict_fill(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v
+        if isinstance(v, str):
+            try:
+                v = json.loads(v)
+                return v
+            except JSONDecodeError:
+                ...
+            result = {}
+            v = v.replace("{", "").replace("}", "")
+            # Split by comma to handle multiple pairs (src:dst)
+            pairs = v.strip().strip("'").split(",")
+            for pair in pairs:
+                pair = pair.strip()
+                if ":" in pair:
+                    key_value = pair.split("|", 1)
+                    if len(key_value) == 2:
+                        result[key_value[0].strip().strip('"')] = (
+                            key_value[1].strip().strip('"')
+                        )
+            return result
         return v
+
+
+if __name__ == "__main__":
+    print(Settings())
