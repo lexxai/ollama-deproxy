@@ -1,7 +1,6 @@
 import json
 import logging
 
-
 excluded_headers = {
     "content-length",
     "connection",
@@ -58,13 +57,12 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
             if model:
                 logger.debug(f"Proxying request with model: {model} ")
             if (
-                settings.force_model is not None
-                and settings.mirage_models is not None
-                and model in settings.mirage_models
+                settings.mirage_models_dict is not None
+                and model in settings.mirage_models_dict
             ):
-                data["model"] = settings.force_model
+                data["model"] = settings.mirage_models_dict.get(model)
                 logger.debug(
-                    f"Proxying request replaced by model: {settings.force_model} "
+                    f"Mirage mapping detected: Model replaced to : {data['model']} "
                 )
                 return json.dumps(data).encode()
 
@@ -111,6 +109,7 @@ def print_header():
     print("=" * 60)
     if sys.platform == "win32":
         from ollama_deproxy import __version__
+
         os.system(f"title 👁️🦙 Ollama DeProxy v{__version__}")
     print()
 

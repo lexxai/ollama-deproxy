@@ -23,6 +23,38 @@ class ResponseCache(CacheBase):
             path.lower().startswith(cached) for cached in self.CACHED_PATHS
         )
 
+    @staticmethod
+    def add_mirage_models(response: Response, headers: dict):
+        # replace models mode
+        if settings.mirage_models_dict is not None:
+            data = json.loads(response.body)
+            models: list = data.get("models", [])
+            mirage_dst: set[str] = set(settings.mirage_models_dict.values())
+            for m in models:
+                s_model = m.get("name")
+                if s_model is None or (s_model not in mirage_dst):
+                    continue
+                for rs, rd in settings.mirage_models_dict.items():
+                    if rd != s_model:
+                        continue
+                    dm = dict(m)
+                    dm["name"] = rs
+                    dm["model"] = rs
+                    models.append(dm)
+                    logger.debug(f"Added mirage model to model list: {dm['name']}")
+
+            overlay_body = json.dumps(data).encode()
+            headers["content-length"] = str(len(overlay_body))
+            new_response = Response(
+                content=overlay_body,
+                status_code=response.status_code,
+                headers=headers,
+                media_type=response.media_type,
+            )
+            response = new_response
+            return response
+        return None
+
     async def get_or_fetch(
         self, request: Request, path: str, session, ollama_helper, body: bytes = None
     ) -> Response | None:
@@ -53,38 +85,11 @@ class ResponseCache(CacheBase):
         )
         headers: dict[str, str] = dict(response.headers)
         headers.pop("content-encoding", None)
-
-        # replace models mode
-        if (
-            settings.force_model is not None
-            and (mirage_models := settings.mirage_models) is not None
-        ):
-            data = json.loads(response.body)
-            models: list = data.get("models", [])
-            for m in models:
-                f_model = m.get("name")
-                if not f_model or (f_model != settings.force_model):
-                    continue
-                for mirage in mirage_models:
-                    dm = dict(m)
-                    dm["name"] = mirage
-                    dm["model"] = mirage
-                    models.append(dm)
-                    logger.debug(f"Added mirage model to model list: {mirage}")
-
-                overlay_body = json.dumps(data).encode()
-                headers["content-length"] = str(len(overlay_body))
-                new_response = Response(
-                    content=overlay_body,
-                    status_code=response.status_code,
-                    headers=headers,
-                    media_type=response.media_type,
-                )
-                response = new_response
-                break
-
         headers["content-length"] = str(len(response.body))
         # logger.debug(f"headers: {headers}")
+
+        if (repaced_response := self.add_mirage_models(response, headers)) is not None:
+            response = repaced_response
 
         # Cache the response if valid
         if isinstance(response, Response):

@@ -57,7 +57,7 @@ class Settings(BaseModel):
         default=environ.get("HASH_ALGORITHM", "auto"),
         description="Hash algorithm to use for caching. Set to 'auto' to use the default algorithm.",
     )
-    mirage_models_dict: dict[str, str] | str | None = Field(
+    mirage_models_dict: dict[str, str] | None = Field(
         default=environ.get("MIRAGE_MODELS_DICT", None),
         description="A dictionary mapping source model to destination model for mirage requests. Format: 'src1:dst1,src2:dst2'.",
     )
@@ -93,7 +93,7 @@ class Settings(BaseModel):
             v = app_version()
         return v
 
-    @field_validator("mirage_models_dict", mode="after")
+    @field_validator("mirage_models_dict", mode="before")
     @classmethod
     def mirage_models_dict_fill(cls, v):
         if v is None:
