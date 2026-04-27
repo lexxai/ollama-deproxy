@@ -5,7 +5,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.12.1
+anyio==4.13.0
     # via
     #   httpx
     #   starlette
@@ -14,21 +14,21 @@ brotli==1.2.0 ; platform_python_implementation == 'CPython'
     # via httpx
 brotlicffi==1.2.0.1 ; platform_python_implementation != 'CPython'
     # via httpx
-cachetools==7.0.5
+cachetools==7.0.6
     # via ollama-deproxy
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   httpcore
     #   httpx
 cffi==2.0.0 ; platform_python_implementation != 'CPython'
     # via brotlicffi
-click==8.3.1
+click==8.3.3
     # via uvicorn
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   click
     #   uvicorn
-fastapi==0.135.1
+fastapi==0.136.1
     # via ollama-deproxy
 h11==0.16.0
     # via
@@ -46,27 +46,27 @@ httpx==0.28.1
     # via ollama-deproxy
 hyperframe==6.1.0
     # via h2
-idna==3.11
+idna==3.13
     # via
     #   anyio
     #   httpx
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'CPython'
     # via cffi
-pydantic==2.12.5
+pydantic==2.13.3
     # via fastapi
-pydantic-core==2.41.5
+pydantic-core==2.46.3
     # via pydantic
 python-dotenv==1.2.2
     # via
     #   ollama-deproxy
     #   uvicorn
-python-multipart==0.0.22
+python-multipart==0.0.26
     # via ollama-deproxy
 pyyaml==6.0.3
     # via uvicorn
-starlette==0.52.1
+starlette==1.0.0
     # via fastapi
-types-cachetools==6.2.0.20251022
+types-cachetools==6.2.0.20260408
     # via ollama-deproxy
 typing-extensions==4.15.0
     # via
@@ -80,7 +80,7 @@ typing-inspection==0.4.2
     # via
     #   fastapi
     #   pydantic
-uvicorn==0.41.0
+uvicorn==0.46.0
     # via ollama-deproxy
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
