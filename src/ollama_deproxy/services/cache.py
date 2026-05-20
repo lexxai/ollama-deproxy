@@ -19,9 +19,7 @@ class ResponseCache(CacheBase):
     )
 
     def is_cached(self, path: str) -> bool:
-        return super().is_cached(path) and any(
-            path.lower().startswith(cached) for cached in self.CACHED_PATHS
-        )
+        return super().is_cached(path) and any(path.lower().startswith(cached) for cached in self.CACHED_PATHS)
 
     @staticmethod
     def add_mirage_models(response: Response, headers: dict):
@@ -56,7 +54,12 @@ class ResponseCache(CacheBase):
         return None
 
     async def get_or_fetch(
-        self, request: Request, path: str, session, ollama_helper, body: bytes = None
+        self,
+        request: Request,
+        path: str,
+        http_connection,
+        ollama_helper,
+        body: bytes = None,
     ) -> Response | None:
         """Get a cached response or fetch and cache a new one."""
         if not self.is_cached(path):
@@ -80,10 +83,8 @@ class ResponseCache(CacheBase):
             )
 
         # Fetch not streaming response if not cached
-        response = await handler_root_response(
-            path, request, session, ollama_helper, decode_response=True
-        )
-        headers: dict[str, str] = dict(response.headers)
+        response = await handler_root_response(path, request, http_connection, ollama_helper, decode_response=True)
+        headers: dict[str, str] = dict(response.headers)  # noqa
         headers.pop("content-encoding", None)
         headers["content-length"] = str(len(response.body))
         # logger.debug(f"headers: {headers}")

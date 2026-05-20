@@ -63,6 +63,14 @@ class Settings(BaseModel):
     )
 
     limit_concurrency: int = Field(default=environ.get("LIMIT_CONCURRENCY", 90))
+    ollama_cloud_url: HttpUrl = Field(
+        default=environ.get("OLLAMA_CLOUD_URL", "https://ollama.com"),
+        description="Ollama cloud URL",
+    )
+    ollama_api_key: SecretStr | None = Field(
+        default=environ.get("OLLAMA_API_KEY"), description="Ollama API key"
+    )
+    cloud_model_suffix: str = "-cloud"
 
     @field_validator("hash_algorithm", mode="after")
     @classmethod

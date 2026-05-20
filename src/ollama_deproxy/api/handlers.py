@@ -30,7 +30,7 @@ def get_duration_str(start_time: float):
 async def handler_root_response(
     path: str,
     request: Request,
-    client,
+    http_connection,
     ollama_helper: OllamaHelper,
     decode_response: bool = None,
 ):
@@ -50,12 +50,11 @@ async def handler_root_response(
         body_bytes = debug_response
         proxy_headers["content-length"] = str(len(body_bytes))
 
-    if settings.correct_numbered_model_names and not path.startswith(
-        ollama_helper.MODEL_PATH
-    ):
+    if settings.correct_numbered_model_names and not path.startswith(ollama_helper.MODEL_PATH):
         body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
         proxy_headers["content-length"] = str(len(body_bytes))
     start_time = time.perf_counter()
+    client = await http_connection.get_client()
     try:
         async with client.stream(
             method=method,
@@ -70,9 +69,7 @@ async def handler_root_response(
                 response_content = response.content
                 # logger.debug(f"Response session.headers: {session.headers}")
             else:
-                response_content = b"".join(
-                    [chunk async for chunk in response.aiter_raw()]
-                )
+                response_content = b"".join([chunk async for chunk in response.aiter_raw()])
     except Exception as e:
         logger.error(f"handler_root_response: {e}")
         if str(e).startswith("Max outbound streams"):
@@ -97,9 +94,7 @@ async def handler_root_response(
     )
 
 
-async def handler_root_stream_response(
-    path: str, request: Request, client, ollama_helper: OllamaHelper
-):
+async def handler_root_stream_response(path: str, request: Request, http_connection, ollama_helper: OllamaHelper):
     # logger.debug(f"Handling root stream request for path: {path}")
 
     target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
@@ -125,6 +120,7 @@ async def handler_root_stream_response(
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
             proxy_headers["content-length"] = str(len(body_bytes))
 
+        client = await http_connection.get_client()
         stream_ctx = client.stream(
             method=method,
             url=target_url,
@@ -163,9 +159,7 @@ async def handler_root_stream_response(
         )
 
     # --- SUCCESS PATH ---
-    response_aiter_method = (
-        response.aiter_bytes() if settings.decode_response else response.aiter_raw()
-    )
+    response_aiter_method = response.aiter_bytes() if settings.decode_response else response.aiter_raw()
 
     async def cleanup_and_log():
         await stream_ctx.__aexit__(None, None, None)

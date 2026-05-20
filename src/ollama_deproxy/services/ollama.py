@@ -26,6 +26,9 @@ class OllamaHelper:
         self.models: list[dict] | None = None
         self.client = client
         self.response_cache = response_cache
+        if client is None:
+            # logger.error("Client is not initialized")
+            raise RuntimeError("Client is not initialized")
 
     def set_client(self, client):
         self.client = client

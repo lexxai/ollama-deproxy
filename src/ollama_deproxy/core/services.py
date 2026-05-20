@@ -1,11 +1,15 @@
 import asyncio
 
-from ..services.network import HttpConnection
+from ..services.network import HttpConnection, HttpConnectionManager
 from .config import settings
 
 
 def build_http_connection():
     return HttpConnection()
+
+
+def build_http_connection_manager():
+    return HttpConnectionManager()
 
 
 def build_semaphore():

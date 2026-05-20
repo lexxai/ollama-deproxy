@@ -5,14 +5,18 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from starlette.responses import Response
 
-from ollama_deproxy.core.config import settings
 from ollama_deproxy.api.dependencies import (
     get_http_connection,
     get_ollama_helper,
     get_response_cache,
     get_semaphore,
 )
-from ollama_deproxy.api.handlers import handler_root_response, handler_root_stream_response
+from ollama_deproxy.api.handlers import (
+    handler_root_response,
+    handler_root_stream_response,
+)
+from ollama_deproxy.core.config import settings
+from ollama_deproxy.services.network import HttpConnectionManager
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +43,7 @@ def gen_path(path: str):
     for prefix in anthropic_compatibility_prefixes:
         if path.startswith(prefix):
             path = settings.path_api + path
-            logger.debug(
-                f"Proxying request corrected to '{path}' for Anthropic compatibility"
-            )
+            logger.debug(f"Proxying request corrected to '{path}' for Anthropic compatibility")
             return path, path_split
 
     if path_split in ollama_compatible_prefixes:
@@ -54,13 +56,11 @@ def gen_path(path: str):
     return path, path_split
 
 
-@router.api_route(
-    "/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
-)
+@router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
 async def root(
     path: str,
     request: Request,
-    http_connection=Depends(get_http_connection),
+    http_connection: HttpConnectionManager = Depends(get_http_connection),
     ollama_helper=Depends(get_ollama_helper),
     response_cache=Depends(get_response_cache),
     semaphore=Depends(get_semaphore),
@@ -84,11 +84,10 @@ async def root(
     if path_split == "":
         return Response("Ollama is running")
 
-    client = await http_connection.get_client()
+    # client = await http_connection.get_client()
+    client = http_connection
 
-    cached_response = await response_cache.get_or_fetch(
-        request, path, client, ollama_helper
-    )
+    cached_response = await response_cache.get_or_fetch(request, path, http_connection, ollama_helper)
     if cached_response is not None:
         return cached_response
 
@@ -97,20 +96,18 @@ async def root(
             logger.debug(f"*** Handling request for path: /{path}")
             if settings.stream_response:
                 response = await asyncio.wait_for(
-                    handler_root_stream_response(path, request, client, ollama_helper),
+                    handler_root_stream_response(path, request, http_connection, ollama_helper),
                     timeout=settings.remote_total_timeout,
                 )
                 return response
             else:
                 response = await asyncio.wait_for(
-                    handler_root_response(path, request, client, ollama_helper),
+                    handler_root_response(path, request, http_connection, ollama_helper),
                     timeout=settings.remote_total_timeout,
                 )
                 return response
         except asyncio.TimeoutError:
-            logger.error(
-                f"The request took longer than {settings.remote_total_timeout} seconds total!"
-            )
+            logger.error(f"The request took longer than {settings.remote_total_timeout} seconds total!")
         except Exception as e:
             logger.error(f"root: {e} {type(e)}, try reconnection")
             await http_connection.re_connect()
