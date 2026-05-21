@@ -33,9 +33,7 @@ class OllamaHelper:
     def set_client(self, client):
         self.client = client
 
-    async def get_request(
-        self, path, method: str = "GET", body_bytes: bytes = None, query_params=None
-    ) -> bytes:
+    async def get_request(self, path, method: str = "GET", body_bytes: bytes = None, query_params=None) -> bytes:
         """
         Asynchronous function to execute an HTTP request to the provided path using the specified method.
 
@@ -104,9 +102,7 @@ class OllamaHelper:
                 status_code = cached.get("status_code", 200)
                 headers = cached.get("headers", {})
             else:
-                body_bytes, status_code, headers = await self.get_request(
-                    path, method=method
-                )
+                body_bytes, status_code, headers = await self.get_request(path, method=method)
             if body_bytes:
                 try:
                     data = json.loads(body_bytes.decode())
@@ -125,9 +121,7 @@ class OllamaHelper:
                         method=method,
                     )
                 self.models = data.get("models")
-                self.models = sorted(
-                    self.models, key=lambda x: x.get("modified_at"), reverse=True
-                )
+                self.models = sorted(self.models, key=lambda x: x.get("modified_at"), reverse=True)
                 for i, m in enumerate(self.models):
                     name = m.get("name")
                     logger.debug(f"{i}:{name}")
@@ -233,6 +227,25 @@ class OllamaHelper:
             except json.JSONDecodeError:
                 ...
         return data
+
+    @staticmethod
+    def get_query_model_name(data: bytes) -> str | None:
+        if not data:
+            return None
+        try:
+            data_dict = json.loads(data.decode())
+        except json.JSONDecodeError:
+            logger.debug("Error of decoding JSON")
+            return None
+        return data_dict.get("model")
+
+    @staticmethod
+    def get_path_for_model(url_path: str, model_name) -> str:
+        if model_name and model_name.endswith(settings.cloud_model_suffix) and settings.ollama_api_key:
+            result = url_path.lstrip("/").lstrip(settings.path_proxy_ollama)
+            logger.debug(f"Changed target url path for model: '{model_name}' to '{result}'")
+            return result
+        return url_path
 
 
 if __name__ == "__main__":

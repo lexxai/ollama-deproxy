@@ -6,6 +6,7 @@ from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
 
 from ..core.config import settings
+from ..services.network import HttpConnectionManager
 from ..services.ollama import OllamaHelper
 from ..utils.common import debug_requests_data, filter_headers
 
@@ -30,13 +31,11 @@ def get_duration_str(start_time: float):
 async def handler_root_response(
     path: str,
     request: Request,
-    http_connection,
+    http_connection: HttpConnectionManager,
     ollama_helper: OllamaHelper,
-    decode_response: bool = None,
+    decode_response: bool | None = None,
 ):
     # logger.debug(f"Handling root request for path: {path}")
-    target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
-
     method = request.method
     query_params = request.query_params
     decode_response = decode_response or settings.decode_response
@@ -44,6 +43,9 @@ async def handler_root_response(
     proxy_headers = build_proxy_headers(request)
 
     body_bytes = await request.body() if request else b""
+
+    query_model_name = ollama_helper.get_query_model_name(body_bytes)
+    target_url = ollama_helper.get_path_for_model(path.lstrip("/"), query_model_name)
 
     debug_response = debug_requests_data(body_bytes, method, target_url)
     if debug_response is not None:
@@ -54,7 +56,11 @@ async def handler_root_response(
         body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
         proxy_headers["content-length"] = str(len(body_bytes))
     start_time = time.perf_counter()
-    client = await http_connection.get_client()
+
+    client = await http_connection.get_client(model_name=query_model_name)
+    if client is None:
+        raise RuntimeError("Client isn't initialized. Check your environment variables.")
+
     try:
         async with client.stream(
             method=method,
@@ -94,10 +100,10 @@ async def handler_root_response(
     )
 
 
-async def handler_root_stream_response(path: str, request: Request, http_connection, ollama_helper: OllamaHelper):
+async def handler_root_stream_response(
+    path: str, request: Request, http_connection: HttpConnectionManager, ollama_helper: OllamaHelper
+):
     # logger.debug(f"Handling root stream request for path: {path}")
-
-    target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
 
     method = request.method
     query_params = request.query_params
@@ -111,6 +117,10 @@ async def handler_root_stream_response(path: str, request: Request, http_connect
     try:
         body_bytes = await request.body() if request else b""
 
+        query_model_name = ollama_helper.get_query_model_name(body_bytes)
+
+        target_url = ollama_helper.get_path_for_model(path.lstrip("/"), query_model_name)
+
         debug_response = debug_requests_data(body_bytes, method, target_url)
         if debug_response is not None:
             body_bytes = debug_response
@@ -120,7 +130,10 @@ async def handler_root_stream_response(path: str, request: Request, http_connect
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
             proxy_headers["content-length"] = str(len(body_bytes))
 
-        client = await http_connection.get_client()
+        client = await http_connection.get_client(model_name=query_model_name)
+
+        if client is None:
+            raise RuntimeError("Client isn't initialized. Check your environment variables.")
         stream_ctx = client.stream(
             method=method,
             url=target_url,

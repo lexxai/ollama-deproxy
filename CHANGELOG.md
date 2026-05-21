@@ -1,6 +1,15 @@
 Changelog
 =====================
 
+# [0.6.0] - 2026-05-21
+
+### Added
+
+- Introduced `HttpConnectionManager` to manage multiple connections with distinct credentials and base URLs.
+- Added support for `OLLAMA_CLOUD_URL` and `OLLAMA_API_KEY` environment variables.
+- Implemented logic to automatically switch to the Ollama Cloud connection when an `OLLAMA_API_KEY` is configured and the
+  requested model has a "-cloud" suffix.
+
 # [0.5.0] - 2026-04-27
 
 ### Added

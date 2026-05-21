@@ -34,6 +34,9 @@ It acts as a thin, configurable HTTP bridge between your local tools and the rem
 - **HTTP/2 Support**: Full support for modern upstream connections.
 - **Efficient Decoding**: Use `DECODE_RESPONSE` to choose between automatic decompression (Brotli/Gzip) or raw binary passthrough.
 - **Anthropic and OpenAI** compatible endpoints detection
+- **Ollama Cloud** - Implemented logic to automatically switch to the Ollama Cloud connection when an `OLLAMA_API_KEY` is
+  configured and the
+  requested model has a "-cloud" suffix.
 
 ## Quick Start
 
@@ -229,6 +232,7 @@ uv build
 # Successfully built dist/ollama_deproxy-x.y.z.tar.gz
 # Successfully built dist/ollama_deproxy-x.y.z-py3-none-any.whl
 ```
+
 </details>
 
 ### PIP
@@ -279,10 +283,10 @@ ollama-deproxy
 ```
 
 ### PIP
+
 ```bash
 ollama-deproxy
 ```
-
 
 Expected output:
 

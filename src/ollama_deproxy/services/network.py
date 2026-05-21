@@ -125,10 +125,15 @@ class HttpConnectionManager:
         options = HttpConnectionOptions()
         self.connections[client_id] = HttpConnection(options, self.get_auth_header(client_id))
 
-    async def get_client(self, client_id: ClientID = ClientID.OLLAMA) -> AsyncClient | None:
+    async def get_client(
+        self, client_id: ClientID = ClientID.OLLAMA, model_name: str | None = None
+    ) -> AsyncClient | None:
         if self.connections is None:
             logger.error(f"Connection for {client_id} isn't initialized yet.")
             return None
+        if model_name and model_name.endswith(settings.cloud_model_suffix) and settings.ollama_api_key:
+            logger.debug("Temporary changing connection to OLLAMA_CLOUD")
+            client_id = ClientID.OLLAMA_CLOUD
         connection = self.connections.get(client_id)
         return await connection.get_client() if connection is not None else None
 
