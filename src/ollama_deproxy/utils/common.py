@@ -22,23 +22,15 @@ logger = logging.getLogger(__name__)
 def filter_headers(headers, decode_response: bool = None):
     from ..core.config import settings
 
-    if (
-        decode_response is not None
-        and settings.decode_response != decode_response
-        and decode_response
-    ):
+    if decode_response is not None and settings.decode_response != decode_response and decode_response:
         excluded_headers_set = excluded_headers.copy()
         excluded_headers_set.add("content-encoding")
-        return {
-            k: v for k, v in headers.items() if k.lower() not in excluded_headers_set
-        }
+        return {k: v for k, v in headers.items() if k.lower() not in excluded_headers_set}
     else:
         excluded_headers_set = excluded_headers.copy()
         if settings.decode_response:
             excluded_headers_set.add("content-encoding")
-        return {
-            k: v for k, v in headers.items() if k.lower() not in excluded_headers_set
-        }
+        return {k: v for k, v in headers.items() if k.lower() not in excluded_headers_set}
 
 
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
@@ -56,20 +48,13 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
             model = data.get("model") if isinstance(data, dict) else None
             if model:
                 logger.debug(f"Proxying request with model: {model} ")
-            if (
-                settings.mirage_models_dict is not None
-                and model in settings.mirage_models_dict
-            ):
+            if settings.mirage_models_dict is not None and model in settings.mirage_models_dict:
                 data["model"] = settings.mirage_models_dict.get(model)
-                logger.debug(
-                    f"Mirage mapping detected: Model replaced to : {data['model']} "
-                )
+                logger.debug(f"Mirage mapping detected: Model replaced to : {data['model']} ")
                 return json.dumps(data).encode()
 
         else:
-            logger.debug(
-                f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
-            )
+            logger.debug(f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}")
         return None
 
 
@@ -81,13 +66,9 @@ def decode_error(e):
         error_msg = error["msg"]
 
         # Get field description from Pydantic model
-        field_info = (
-            Settings.model_fields.get(error["loc"][0]) if error["loc"] else None
-        )
+        field_info = Settings.model_fields.get(error["loc"][0]) if error["loc"] else None
         field_description = (
-            field_info.description
-            if field_info and hasattr(field_info, "description")
-            else "No description available"
+            field_info.description if field_info and hasattr(field_info, "description") else "No description available"
         )
 
         print(f"Error for field: '{field_name}'")
@@ -129,4 +110,10 @@ def app_version():
                 v = tomllib.load(f)["project"]["version"]
     except Exception as e:
         print(f"Error app_version: {e}")
+    return v
+
+
+def normalize_quotes(v):
+    if v is not None:
+        return v.strip().strip("'").strip('"').strip()
     return v

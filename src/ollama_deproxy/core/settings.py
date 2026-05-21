@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, field_validator
 
-from ..utils.common import app_version
+from ..utils.common import app_version, normalize_quotes
 
 BASE_PATH = Path(__file__).parent.parent
 load_dotenv(BASE_PATH.parent / ".env")
@@ -21,34 +21,22 @@ class Settings(BaseModel):
 
     model_config = ConfigDict(validate_default=True)
 
-    remote_url: HttpUrl = Field(
-        default=environ.get("REMOTE_URL"), description="Proxy server URL"
-    )
+    remote_url: HttpUrl = Field(default=environ.get("REMOTE_URL"), description="Proxy server URL")
     path_proxy_ollama: str = Field(default=environ.get("PATH_PROXY_OLLAMA", "ollama/"))
     path_api: str = Field(default=environ.get("PATH_API", "api/"))
     remote_url_http2: bool = Field(default=environ.get("REMOTE_URL_HTTP2", True))
-    remote_auth_header: str = Field(
-        default=environ.get("REMOTE_AUTH_HEADER", "Authorization")
-    )
-    remote_auth_token: SecretStr | None = Field(
-        default=environ.get("REMOTE_AUTH_TOKEN")
-    )
+    remote_auth_header: str = Field(default=environ.get("REMOTE_AUTH_HEADER", "Authorization"))
+    remote_auth_token: SecretStr | None = Field(default=normalize_quotes(environ.get("REMOTE_AUTH_TOKEN")))
     remote_timeout: int | None = Field(default=environ.get("REMOTE_TIMEOUT", None))
-    remote_total_timeout: int | None = Field(
-        default=environ.get("REMOTE_TOTAL_TIMEOUT", 60 * 10)
-    )  # 10 minutes
+    remote_total_timeout: int | None = Field(default=environ.get("REMOTE_TOTAL_TIMEOUT", 60 * 10))  # 10 minutes
     local_port: int = Field(default=environ.get("LOCAL_PORT", "11434"))
     log_level: str = Field(default=environ.get("LOG_LEVEL", "INFO"))
     app_version: str | None = Field(default=None)
     stream_response: bool = Field(default=environ.get("STREAM_RESPONSE", True))
     decode_response: bool = Field(default=environ.get("DECODE_RESPONSE", False))
     debug_request: bool = Field(default=environ.get("DEBUG_REQUEST", False))
-    debug_request_model_only: bool = Field(
-        default=environ.get("DEBUG_REQUEST_MODEL_ONLY", False)
-    )
-    correct_numbered_model_names: bool = Field(
-        default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False)
-    )
+    debug_request_model_only: bool = Field(default=environ.get("DEBUG_REQUEST_MODEL_ONLY", False))
+    correct_numbered_model_names: bool = Field(default=environ.get("CORRECT_NUMBERED_MODEL_NAMES", False))
 
     cache_enabled: bool = Field(default=environ.get("CACHE_ENABLED", True))
     cache_maxsize: int = Field(default=environ.get("CACHE_MAXSIZE", 512))  # 512 entries
@@ -68,7 +56,7 @@ class Settings(BaseModel):
         description="Ollama cloud URL",
     )
     ollama_api_key: SecretStr | None = Field(
-        default=environ.get("OLLAMA_API_KEY"), description="Ollama API key"
+        default=normalize_quotes(environ.get("OLLAMA_API_KEY")), description="Ollama API key"
     )
     cloud_model_suffix: str = "-cloud"
 
@@ -89,9 +77,7 @@ class Settings(BaseModel):
     @classmethod
     def validate_remote_auth_token(cls, v):
         if not v:
-            print(
-                "WARNING: No remote auth token provided. Proxy will not be authenticated."
-            )
+            print("WARNING: No remote auth token provided. Proxy will not be authenticated.")
         return v
 
     @field_validator("app_version", mode="before")
@@ -123,9 +109,7 @@ class Settings(BaseModel):
                 if ":" in pair:
                     key_value = pair.split("|", 1)
                     if len(key_value) == 2:
-                        result[key_value[0].strip().strip('"')] = (
-                            key_value[1].strip().strip('"')
-                        )
+                        result[key_value[0].strip().strip('"')] = key_value[1].strip().strip('"')
             return result
         return v
 
