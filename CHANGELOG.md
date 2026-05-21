@@ -1,6 +1,14 @@
 Changelog
 =====================
 
+# [0.5.0] - 2026-04-27
+
+### Added
+
+- Ability to replace model name in request queries using `MIRAGE_MODELS_DICT` when `DEBUG_REQUEST_MODEL_ONLY` is
+  enabled
+- `MIRAGE_MODELS_DICT` is automatically added to the ollama model list query response
+
 # [0.4.3] - 2026-04-08
 
 ### Added

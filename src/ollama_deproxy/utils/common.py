@@ -1,8 +1,6 @@
 import json
 import logging
 
-from . import __version__
-
 excluded_headers = {
     "content-length",
     "connection",
@@ -22,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def filter_headers(headers, decode_response: bool = None):
-    from .config import settings
+    from ..core.config import settings
 
     if (
         decode_response is not None
@@ -44,7 +42,7 @@ def filter_headers(headers, decode_response: bool = None):
 
 
 def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = ""):
-    from .config import settings
+    from ..core.config import settings
 
     if settings.debug_request or settings.debug_request_model_only:
         if body_bytes:
@@ -54,18 +52,29 @@ def debug_requests_data(body_bytes: bytes, method: str = "", target_url: str = "
                 data = body_bytes.decode()
         else:
             data = ""
-        if settings.debug_request_model_only:
+        if data and settings.debug_request_model_only:
             model = data.get("model") if isinstance(data, dict) else None
             if model:
                 logger.debug(f"Proxying request with model: {model} ")
+            if (
+                settings.mirage_models_dict is not None
+                and model in settings.mirage_models_dict
+            ):
+                data["model"] = settings.mirage_models_dict.get(model)
+                logger.debug(
+                    f"Mirage mapping detected: Model replaced to : {data['model']} "
+                )
+                return json.dumps(data).encode()
+
         else:
             logger.debug(
                 f"Proxying request [{method.upper()}] to '{target_url}' with data: {data}"
             )
+        return None
 
 
 def decode_error(e):
-    from .settings_base import Settings
+    from ..core.settings import Settings
 
     for error in e.errors():
         field_name = ".".join(str(loc) for loc in error["loc"])
@@ -99,6 +108,8 @@ def print_header():
     print(f"🦙 Ollama DeProxy Server v{app_version()}")
     print("=" * 60)
     if sys.platform == "win32":
+        from ollama_deproxy import __version__
+
         os.system(f"title 👁️🦙 Ollama DeProxy v{__version__}")
     print()
 
@@ -106,9 +117,9 @@ def print_header():
 def app_version():
     from pathlib import Path
 
-    BASE_PATH = Path(__file__).parent.parent
+    BASE_PATH = Path(__file__).parent.parent.parent
 
-    v = __version__ or "0.0.1"
+    v = "0.0.1"
     try:
         pyproject_file = BASE_PATH.parent / "pyproject.toml"
         if pyproject_file.exists():
