@@ -59,7 +59,7 @@ class OllamaHelper:
         if self.client is None:
             logger.error("Client not initialized")
             return b""
-        target_url = f"{str(settings.remote_url).rstrip('/')}/{path.lstrip('/')}"
+        target_url = f"/{path.lstrip('/')}"
         proxy_headers = {}
         response = await self.client.request(
             method=method,

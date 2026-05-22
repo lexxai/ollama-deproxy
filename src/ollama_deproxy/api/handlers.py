@@ -6,7 +6,7 @@ from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
 
 from ..core.config import settings
-from ..services.network import HttpConnectionManager
+from ..services.network import HttpConnectionManager, ClientID
 from ..services.ollama import OllamaHelper
 from ..utils.common import debug_requests_data, filter_headers
 
@@ -34,6 +34,7 @@ async def handler_root_response(
     http_connection: HttpConnectionManager,
     ollama_helper: OllamaHelper,
     decode_response: bool | None = None,
+    client_id: ClientID | None = None,
 ):
     # logger.debug(f"Handling root request for path: {path}")
     method = request.method
@@ -56,8 +57,10 @@ async def handler_root_response(
         body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
         proxy_headers["content-length"] = str(len(body_bytes))
     start_time = time.perf_counter()
-
-    client = await http_connection.get_client(model_name=query_model_name)
+    if client_id is not None:
+        client = await http_connection.get_client(client_id=client_id)
+    else:
+        client = await http_connection.get_client(model_name=query_model_name)
     if client is None:
         raise RuntimeError("Client isn't initialized. Check your environment variables.")
 
@@ -101,7 +104,11 @@ async def handler_root_response(
 
 
 async def handler_root_stream_response(
-    path: str, request: Request, http_connection: HttpConnectionManager, ollama_helper: OllamaHelper
+    path: str,
+    request: Request,
+    http_connection: HttpConnectionManager,
+    ollama_helper: OllamaHelper,
+    client_id: ClientID | None = None,
 ):
     # logger.debug(f"Handling root stream request for path: {path}")
 
@@ -130,7 +137,10 @@ async def handler_root_stream_response(
             body_bytes = await ollama_helper.replace_numbered_model(body_bytes)
             proxy_headers["content-length"] = str(len(body_bytes))
 
-        client = await http_connection.get_client(model_name=query_model_name)
+        if client_id is not None:
+            client = await http_connection.get_client(client_id=client_id)
+        else:
+            client = await http_connection.get_client(model_name=query_model_name)
 
         if client is None:
             raise RuntimeError("Client isn't initialized. Check your environment variables.")
