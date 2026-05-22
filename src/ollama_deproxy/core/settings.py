@@ -58,7 +58,9 @@ class Settings(BaseModel):
     ollama_api_key: SecretStr | None = Field(
         default=normalize_quotes(environ.get("OLLAMA_API_KEY")), description="Ollama API key"
     )
-    cloud_model_suffix: str = "-cloud"
+    cloud_model_suffix: str = Field(
+        default=normalize_quotes(environ.get("CLOUD_MODEL_SUFFIX", "cloud")), description="CLOUD MODEL SUFFIX"
+    )
 
     @field_validator("hash_algorithm", mode="after")
     @classmethod
