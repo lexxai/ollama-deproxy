@@ -7,10 +7,12 @@ Create a `.env` file based on `.env.example` and adjust the values as needed.
 
 ## Remote Connection (Required)
 
-### `REMOTE_URL` **(required)**  
+### `REMOTE_URL` **(required)**
+
 Remote Proxy API endpoint. In general it OpenWeb UI API endpoint.
 
 Example:
+
 ```dotenv
 REMOTE_URL=https://openwebui.example.com
 ```
@@ -18,7 +20,9 @@ REMOTE_URL=https://openwebui.example.com
 This should point to the upstream Ollama-compatible API (for example, one exposed by OpenWebUI).
 
 ---
+
 ### `PATH_PROXY_OLLAMA`
+
 Prefix for Ollama-compatible API paths.
 
 ```dotenv
@@ -26,6 +30,7 @@ PATH_PROXY_OLLAMA=ollama/
 ```
 
 ### `PATH_API`
+
 Prefix for API paths.
 
 ```dotenv
@@ -185,6 +190,7 @@ DECODE_RESPONSE=True
 ### `DEBUG_REQUEST`
 
 Enable debugging for incoming requests (default: False)
+
 ```dotenv
 DEBUG_REQUEST=False
 ```
@@ -194,15 +200,19 @@ DEBUG_REQUEST=False
 If models are numbered, try to replace them to string representation of an Ollama list.
 This is useful for Copilot Plugin from GitHub (bugged version) that uses numbered model names instead of string.
 Default: False
+
 ```dotenv
 CORRECT_NUMBERED_MODEL_NAMES=False
 ```
 
 When enabled,
+
 ```dotenv
 CORRECT_NUMBERED_MODEL_NAMES=True
 ```
+
 In the logs can see:
+
 ```text
 DEBUG:ollama_deproxy.ollama_helper:0:qwen2.5-coder:1.5b-base
 DEBUG:ollama_deproxy.ollama_helper:1:qwen3:30b
@@ -236,6 +246,7 @@ DEBUG:ollama_deproxy.ollama_helper:28:deepseek-r1:8b
 DEBUG:ollama_deproxy.ollama_helper:29:codellama:34b-instruct
 DEBUG:ollama_deproxy.ollama_helper:30:chroma/all-minilm-l6-v2-f32:latest
 ````
+
 ```text
 DEBUG:ollama_deproxy.ollama_helper:replacement model_name: qwen3-coder-next:latest for 4
 ```
@@ -243,6 +254,7 @@ DEBUG:ollama_deproxy.ollama_helper:replacement model_name: qwen3-coder-next:late
 ### `CACHE_ENABLED`
 
 Cache for selected model endpoints is enabled by default.
+
 ```dotenv
 CACHE_ENABLED=true
 ```
@@ -250,6 +262,7 @@ CACHE_ENABLED=true
 ### `CACHE_MAXSIZE`
 
 Maximum number of cached entries (default: 512).
+
 ```dotenv
 CACHE_MAXSIZE=512
 ```
@@ -257,28 +270,78 @@ CACHE_MAXSIZE=512
 ### `CACHE_TTL`
 
 Cache TTL in seconds (default: 12 hours).
+
 ```dotenv
 CACHE_TTL=43200
 ```
 
-
 ### `HASH_ALGORITHM`
 
 Hash algorithm used for cache keys.
- - auto: benchmark available algorithms on startup and pick the fastest for this platform
- - or set explicitly to one of: blake2s, blake2b, sha256
 
+- auto: benchmark available algorithms on startup and pick the fastest for this platform
+- or set explicitly to one of: blake2s, blake2b, sha256
 
-    Tip: after the first run, you can set the selected value here to skip auto-detection.
+  Tip: after the first run, you can set the selected value here to skip auto-detection.
 
 ```dotenv
 HASH_ALGORITHM=auto
 ```
+
 or after detection:
+
 ```dotenv
 HASH_ALGORITHM=blake2b
 ```
 
+### `MIRAGE_MODELS_DICT`
+
+Defines model name mappings for Mirage mode.
+
+You can use multiple formats:
+
+#### Single model mapping
+
+Adds a single model alias that redirects to the Ollama model defined after the separator.
+
+```dotenv
+MIRAGE_MODELS_DICT=claude-haiku-4-5-20251001:glm-4.7-flash:latest
+```
+
+#### Multiple mappings using string format
+
+Use:
+
+* `|` to separate the source and target model
+* `,` to separate multiple mappings
+
+```dotenv
+MIRAGE_MODELS_DICT="claude-haiku-4-5-20251001|glm-4.7-flash:latest,claude-opus-4-6|glm-4.7-flash:latest,claude-sonnet-4-6|glm-4.7-flash:latest"
+```
+
+Equivalent mappings:
+
+* `claude-haiku-4-5-20251001` → `glm-4.7-flash:latest`
+* `claude-opus-4-6` → `glm-4.7-flash:latest`
+* `claude-sonnet-4-6` → `glm-4.7-flash:latest`
+
+#### JSON format
+
+You can also provide mappings as a JSON object:
+
+```dotenv
+MIRAGE_MODELS_DICT={"claude-haiku-4-5-20251001":"glm-4.7-flash:latest","claude-opus-4-6":"glm-4.7-flash:latest","claude-sonnet-4-6":"glm-4.7-flash:latest"}
+```
+
+This format is recommended when managing many mappings or generating configuration automatically.
+
+### `OLLAMA CLOUD`
+
+```dotenv
+OLLAMA_CLOUD_URL=https://ollama.com
+OLLAMA_API_KEY=
+CLOUD_MODEL_SUFFIX=cloud
+```
 
 ---
 
@@ -289,9 +352,11 @@ At minimum, you must define:
 ```dotenv
 REMOTE_URL=...
 ```
-and 
+
+and
 
 ```dotenv
 REMOTE_AUTH_TOKEN=
 ```
+
 Everything else has safe defaults.
